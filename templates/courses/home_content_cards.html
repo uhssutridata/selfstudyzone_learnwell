@@ -11,9 +11,16 @@
     <article class="home-content-card home-performance-card">
       <div class="home-card-heading"><span class="home-card-icon" aria-hidden="true">↗</span><div><span class="eyebrow">{{ home_settings.performance_eyebrow }}</span><h2>{{ home_settings.performance_title }}</h2></div><svg class="home-card-illustration performance-illustration" viewBox="0 0 88 58" aria-hidden="true"><path d="M10 47h68" fill="none" stroke="currentColor" stroke-width="2" opacity=".25"/><rect x="16" y="31" width="12" height="16" rx="3" fill="currentColor" opacity=".35"/><rect x="37" y="22" width="12" height="25" rx="3" fill="currentColor" opacity=".55"/><rect x="58" y="10" width="12" height="37" rx="3" fill="currentColor" opacity=".8"/><path d="m16 25 18-9 15 3L70 7" fill="none" stroke="#526f52" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M63 7h7v7" fill="none" stroke="#526f52" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16" cy="25" r="3" fill="#d6a56d"/></svg></div>
       <div class="home-card-body">
-        {% for highlight in performance_highlights %}
-          {% if forloop.first %}<div class="featured-performance"><span class="performance-kicker">{{ highlight.class_label|default:"LEARNER SPOTLIGHT" }}</span><h3>{{ highlight.title }}</h3><p>{{ highlight.description }}</p><div class="featured-performance-foot"><span>{{ highlight.student_display_name|default:"A Learnwell learner" }}</span>{% if highlight.metric_value %}<strong><small>{{ highlight.metric_label }}</small>{{ highlight.metric_value }}</strong>{% endif %}</div></div>{% endif %}
-        {% empty %}<div class="home-card-empty"><strong>Every step forward counts</strong><p>{{ home_settings.performance_empty_text }}</p></div>{% endfor %}
+        {% if performance_highlights %}<div class="performance-carousel" data-performance-carousel aria-label="Student performance highlights">
+          <div class="performance-slides" aria-live="polite">
+            {% for highlight in performance_highlights %}
+              <div class="featured-performance performance-slide{% if forloop.first %} is-active{% endif %}" data-performance-slide{% if not forloop.first %} hidden{% endif %}>
+                <span class="performance-kicker">{{ highlight.class_label|default:"LEARNER SPOTLIGHT" }}</span><h3>{{ highlight.title }}</h3><p>{{ highlight.description }}</p><div class="featured-performance-foot"><span>{{ highlight.student_display_name|default:"A Learnwell learner" }}</span>{% if highlight.metric_value %}<strong><small>{{ highlight.metric_label }}</small>{{ highlight.metric_value }}</strong>{% endif %}</div>
+              </div>
+            {% endfor %}
+          </div>
+          {% if performance_highlights|length > 1 %}<div class="performance-carousel-controls"><button type="button" data-performance-previous aria-label="Show previous student highlight">‹</button><span data-performance-status aria-live="polite">1 / {{ performance_highlights|length }}</span><button type="button" data-performance-next aria-label="Show next student highlight">›</button></div>{% endif %}
+        </div>{% else %}<div class="home-card-empty"><strong>Every step forward counts</strong><p>{{ home_settings.performance_empty_text }}</p></div>{% endif %}
       </div>
     </article>
 

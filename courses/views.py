@@ -85,7 +85,7 @@ class CourseListView(ListView):
             and _student_class_key(self.request.user)
         )
         ctx["home_notices"] = HomePageNotice.objects.filter(is_active=True)[:4]
-        ctx["performance_highlights"] = HomePagePerformanceHighlight.objects.filter(is_published=True)[:3]
+        ctx["performance_highlights"] = HomePagePerformanceHighlight.objects.filter(is_published=True)
         published_feedback = HomePageFeedback.objects.filter(is_published=True)
         ctx["home_feedback_slots"] = [
             {
