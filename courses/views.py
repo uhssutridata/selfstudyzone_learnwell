@@ -10,7 +10,7 @@ from django.template.defaultfilters import slugify
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import ListView, DetailView
 from django.utils import timezone
-from .forms import ExamResultForm, HomeworkStatusForm, ParentRegistrationForm, RoleAuthenticationForm, StudentRegistrationForm, StudentSearchForm, TeacherRegistrationForm
+from .forms import ExamResultForm, HomeworkStatusForm, ParentProfileForm, ParentRegistrationForm, RoleAuthenticationForm, StudentProfileForm, StudentRegistrationForm, StudentSearchForm, TeacherProfileForm, TeacherRegistrationForm
 from .models import Course, Enrollment, Lesson, LessonProgress, ParentDetails, ParentWatchlist, StudyTime, StudentDetails, Subscription, TeacherDetails, UserProfile
 
 
@@ -126,6 +126,31 @@ def profile(request):
             watchlist = ParentWatchlist.objects.filter(parent=details).select_related("student").order_by("-requested_at")
     return render(request, "courses/profile.html", {"profile": user_profile, "details": details, "watchlist": watchlist})
 
+
+@login_required
+def profile_edit(request):
+    user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    details_models = {
+        UserProfile.Role.STUDENT: (StudentDetails, StudentProfileForm),
+        UserProfile.Role.TEACHER: (TeacherDetails, TeacherProfileForm),
+        UserProfile.Role.PARENT: (ParentDetails, ParentProfileForm),
+    }
+    model, form_class = details_models[user_profile.role]
+    details, _ = model.objects.get_or_create(profile=user_profile)
+    form = form_class(request.POST or None, request.FILES or None, instance=details)
+    if request.method == "POST" and form.is_valid():
+        updated = form.save()
+        form.save_avatar(user_profile)
+        if user_profile.role == UserProfile.Role.TEACHER:
+            request.user.first_name = form.cleaned_data.get("full_name", "").strip()
+            request.user.save(update_fields=["first_name"])
+            if form.verification_details_changed():
+                updated.is_verified = False
+                updated.save(update_fields=["is_verified"])
+        messages.success(request, "Your profile has been updated.")
+        return redirect("profile")
+    return render(request, "courses/profile_edit.html", {"profile": user_profile, "details": details, "form": form})
+
 @login_required
 def enroll(request, slug):
     if request.method == "POST":
@@ -170,7 +195,7 @@ def signup(request):
     if request.method == "POST" and form and form.is_valid():
         user = form.save()
         login(request, user)
-        if role == UserProfile.Role.PARENT:
+        if role == UserProfile.Role.PARENT and form.cleaned_data.get("parent_name"):
             return redirect("parent-watchlist")
         return redirect("dashboard")
     return render(request, "registration/signup.html", {"form": form, "selected_role": role, "role_label": UserProfile.Role(role).label if role in forms_by_role else ""})
@@ -211,7 +236,7 @@ def parent_watchlist(request):
     results = StudentDetails.objects.none()
     if search_form.is_valid():
         query = search_form.cleaned_data["q"].strip()
-        if len(query) >= 3:
+        if len(query) >= 3 and parent.parent_name:
             results = StudentDetails.objects.filter(
                 student_name__icontains=query,
             ).filter(

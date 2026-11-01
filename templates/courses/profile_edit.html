@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Edit profile — Learnwell{% endblock %}
+{% block content %}
+<section class="dashboard-heading profile-heading">
+  <span class="eyebrow">YOUR ACCOUNT</span>
+  <h1>Complete your <em>profile.</em></h1>
+  <p>You can add or update these details at any time. All fields are optional.</p>
+</section>
+<section class="content-section profile-content">
+  <div class="profile-card">
+    <form method="post" enctype="multipart/form-data" class="auth-form">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      {% for field in form %}
+        <div class="form-field{% if field.name == 'subjects' %} form-field-wide{% endif %}">
+          {{ field.label_tag }}
+          {{ field }}
+          {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+          {% for error in field.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+        </div>
+      {% endfor %}
+      {% if profile.avatar %}<div class="form-field"><label>Current photo</label><img class="profile-avatar" src="{{ profile.avatar.url }}" alt="Current profile photo"></div>{% endif %}
+      <div class="form-actions"><button class="button" type="submit">Save profile</button><a class="text-link" href="{% url 'profile' %}">Cancel</a></div>
+    </form>
+  </div>
+</section>
+{% endblock %}

@@ -36,17 +36,15 @@ class RegistrationForm(UserCreationForm):
 
 
 class StudentRegistrationForm(RegistrationForm):
-    student_name = forms.CharField(max_length=160, label="Student name")
-    block = forms.CharField(max_length=120)
-    district = forms.CharField(max_length=120)
-    father_name = forms.CharField(max_length=160, label="Father’s name")
-    mother_name = forms.CharField(max_length=160, label="Mother’s name")
-    school_name = forms.CharField(max_length=200, label="School name")
-    class_name = forms.CharField(max_length=40, label="Class")
-    roll_number = forms.CharField(max_length=40, label="Roll number")
-    block = forms.CharField(max_length=120)
-    district = forms.CharField(max_length=120)
-    state = forms.CharField(max_length=120)
+    student_name = forms.CharField(max_length=160, label="Student name", required=False)
+    father_name = forms.CharField(max_length=160, label="Father’s name", required=False)
+    mother_name = forms.CharField(max_length=160, label="Mother’s name", required=False)
+    school_name = forms.CharField(max_length=200, label="School name", required=False)
+    class_name = forms.CharField(max_length=40, label="Class", required=False)
+    roll_number = forms.CharField(max_length=40, label="Roll number", required=False)
+    block = forms.CharField(max_length=120, required=False)
+    district = forms.CharField(max_length=120, required=False)
+    state = forms.CharField(max_length=120, required=False)
 
     class Meta(RegistrationForm.Meta):
         fields = ("student_name", "username", "father_name", "mother_name", "school_name", "class_name", "roll_number", "block", "district", "state")
@@ -62,7 +60,7 @@ class StudentRegistrationForm(RegistrationForm):
 
 
 class TeacherRegistrationForm(RegistrationForm):
-    full_name = forms.CharField(max_length=160, label="Your name")
+    full_name = forms.CharField(max_length=160, label="Your name", required=False)
     block = forms.CharField(max_length=120, required=False, label="Block (optional)")
     district = forms.CharField(max_length=120, required=False, label="District (optional)")
     state = forms.CharField(max_length=120, required=False, label="State (optional)")
@@ -70,38 +68,31 @@ class TeacherRegistrationForm(RegistrationForm):
         choices=TEACHING_SUBJECTS,
         widget=CheckboxSelectMultiple,
         label="Select the subjects you teach",
-        error_messages={"required": "Select at least one subject."},
+        required=False,
     )
     other_subject = forms.CharField(max_length=160, required=False, label="Other subject (if applicable)")
     is_private_tutor = forms.BooleanField(required=False, label="I am a private tutor")
     school_name = forms.CharField(max_length=200, required=False, label="School name where you teach")
     school_address = forms.CharField(widget=forms.Textarea(attrs={"rows": 3}), required=False, label="School address")
-    mobile_number = forms.CharField(max_length=30, label="Mobile number")
-    email = forms.EmailField(label="Email address")
+    mobile_number = forms.CharField(max_length=30, label="Mobile number", required=False)
+    email = forms.EmailField(label="Email address", required=False)
 
     class Meta(RegistrationForm.Meta):
         fields = ("full_name", "username", "subjects", "other_subject", "is_private_tutor", "school_name", "school_address", "mobile_number", "email", "block", "district", "state")
 
     def clean(self):
-        cleaned = super().clean()
-        if "other" in cleaned.get("subjects", []) and not cleaned.get("other_subject", "").strip():
-            self.add_error("other_subject", "Enter the subject you selected as Other.")
-        return cleaned
+        return super().clean()
 
     def clean_mobile_number(self):
-        value = self.cleaned_data["mobile_number"].strip()
+        value = self.cleaned_data.get("mobile_number", "").strip()
+        if not value:
+            return value
         if not re.fullmatch(r"[+()\-\d\s]{7,20}", value):
             raise forms.ValidationError("Enter a valid mobile number.")
         return value
 
     def clean(self):
-        cleaned = super().clean()
-        if not cleaned.get("is_private_tutor"):
-            if not cleaned.get("school_name"):
-                self.add_error("school_name", "Enter your school name, or select private tutor.")
-            if not cleaned.get("school_address"):
-                self.add_error("school_address", "Enter your school address, or select private tutor.")
-        return cleaned
+        return super().clean()
 
     def save(self, commit=True):
         user = super().save(commit=commit)
@@ -125,18 +116,20 @@ class TeacherRegistrationForm(RegistrationForm):
 
 
 class ParentRegistrationForm(RegistrationForm):
-    parent_name = forms.CharField(max_length=160, label="Your name")
+    parent_name = forms.CharField(max_length=160, label="Your name", required=False)
     block = forms.CharField(max_length=120, required=False, label="Block (optional)")
     district = forms.CharField(max_length=120, required=False, label="District (optional)")
     state = forms.CharField(max_length=120, required=False, label="State (optional)")
-    address = forms.CharField(widget=forms.Textarea(attrs={"rows": 3}), label="Your address")
-    mobile_number = forms.CharField(max_length=30, label="Mobile number")
+    address = forms.CharField(widget=forms.Textarea(attrs={"rows": 3}), label="Your address", required=False)
+    mobile_number = forms.CharField(max_length=30, label="Mobile number", required=False)
 
     class Meta(RegistrationForm.Meta):
         fields = ("parent_name", "username", "address", "mobile_number", "block", "district", "state")
 
     def clean_mobile_number(self):
-        value = self.cleaned_data["mobile_number"].strip()
+        value = self.cleaned_data.get("mobile_number", "").strip()
+        if not value:
+            return value
         if not re.fullmatch(r"[+()\-\d\s]{7,20}", value):
             raise forms.ValidationError("Enter a valid mobile number.")
         return value
@@ -147,6 +140,63 @@ class ParentRegistrationForm(RegistrationForm):
             profile = self.save_profile(user, UserProfile.Role.PARENT)
             parent = ParentDetails.objects.create(profile=profile, parent_name=self.cleaned_data["parent_name"], address=self.cleaned_data["address"], mobile_number=self.cleaned_data["mobile_number"], block=self.cleaned_data["block"], district=self.cleaned_data["district"], state=self.cleaned_data["state"])
         return user
+
+
+class ProfileAvatarMixin:
+    def save_avatar(self, profile):
+        if self.cleaned_data.get("avatar"):
+            profile.avatar = self.cleaned_data["avatar"]
+            profile.save(update_fields=["avatar"])
+
+
+class StudentProfileForm(ProfileAvatarMixin, forms.ModelForm):
+    avatar = forms.ImageField(required=False, label="Profile photo")
+    class Meta:
+        model = StudentDetails
+        fields = ("student_name", "father_name", "mother_name", "school_name", "class_name", "roll_number", "block", "district", "state")
+
+
+class TeacherProfileForm(ProfileAvatarMixin, forms.ModelForm):
+    avatar = forms.ImageField(required=False, label="Profile photo")
+    full_name = forms.CharField(max_length=160, required=False, label="Your name")
+    subjects = forms.MultipleChoiceField(choices=TEACHING_SUBJECTS, widget=CheckboxSelectMultiple, required=False, label="Subjects you teach")
+    other_subject = forms.CharField(max_length=160, required=False, label="Other subject")
+
+    class Meta:
+        model = TeacherDetails
+        fields = ("school_name", "school_address", "is_private_tutor", "mobile_number", "email", "block", "district", "state")
+
+    def verification_details_changed(self):
+        return any(name in self.changed_data for name in ("school_name", "school_address", "is_private_tutor", "mobile_number", "email", "block", "district", "state"))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.profile_id:
+            self.fields["full_name"].initial = self.instance.profile.user.first_name
+        if self.instance and self.instance.subject:
+            current = {label: key for key, label in TEACHING_SUBJECTS}
+            self.fields["subjects"].initial = [current[s.strip()] for s in self.instance.subject.split(",") if s.strip() in current]
+            known = {label for _, label in TEACHING_SUBJECTS}
+            self.fields["other_subject"].initial = ", ".join(s.strip() for s in self.instance.subject.split(",") if s.strip() not in known)
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        labels = dict(TEACHING_SUBJECTS)
+        selected = self.cleaned_data.get("subjects", [])
+        subjects = [labels[item] for item in selected if item != "other"]
+        if "other" in selected and self.cleaned_data.get("other_subject", "").strip():
+            subjects.append(self.cleaned_data["other_subject"].strip())
+        instance.subject = ", ".join(subjects)
+        if commit:
+            instance.save()
+        return instance
+
+
+class ParentProfileForm(ProfileAvatarMixin, forms.ModelForm):
+    avatar = forms.ImageField(required=False, label="Profile photo")
+    class Meta:
+        model = ParentDetails
+        fields = ("parent_name", "address", "mobile_number", "block", "district", "state")
 
 
 class StudentSearchForm(forms.Form):

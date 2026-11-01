@@ -10,33 +10,34 @@ class UserProfile(models.Model):
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
     role = models.CharField(max_length=12, choices=Role.choices, default=Role.STUDENT)
+    avatar = models.ImageField(upload_to="profile_pictures/", blank=True, null=True)
 
     def __str__(self):
         return f"{self.user.username} ({self.get_role_display()})"
 
 class StudentDetails(models.Model):
     profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name="student_details")
-    student_name = models.CharField(max_length=160)
-    father_name = models.CharField(max_length=160)
-    mother_name = models.CharField(max_length=160)
-    school_name = models.CharField(max_length=200)
-    class_name = models.CharField(max_length=40)
-    roll_number = models.CharField(max_length=40)
-    block = models.CharField(max_length=120)
-    district = models.CharField(max_length=120)
-    state = models.CharField(max_length=120)
+    student_name = models.CharField(max_length=160, blank=True)
+    father_name = models.CharField(max_length=160, blank=True)
+    mother_name = models.CharField(max_length=160, blank=True)
+    school_name = models.CharField(max_length=200, blank=True)
+    class_name = models.CharField(max_length=40, blank=True)
+    roll_number = models.CharField(max_length=40, blank=True)
+    block = models.CharField(max_length=120, blank=True)
+    district = models.CharField(max_length=120, blank=True)
+    state = models.CharField(max_length=120, blank=True)
 
     def __str__(self):
         return self.student_name
 
 class TeacherDetails(models.Model):
     profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name="teacher_details")
-    subject = models.CharField(max_length=160)
+    subject = models.CharField(max_length=240, blank=True)
     school_name = models.CharField(max_length=200, blank=True)
     school_address = models.TextField(blank=True)
     is_private_tutor = models.BooleanField(default=False)
-    mobile_number = models.CharField(max_length=30)
-    email = models.EmailField()
+    mobile_number = models.CharField(max_length=30, blank=True)
+    email = models.EmailField(blank=True)
     block = models.CharField(max_length=120, blank=True)
     district = models.CharField(max_length=120, blank=True)
     state = models.CharField(max_length=120, blank=True)
@@ -47,9 +48,9 @@ class TeacherDetails(models.Model):
 
 class ParentDetails(models.Model):
     profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name="parent_details")
-    parent_name = models.CharField(max_length=160)
-    address = models.TextField()
-    mobile_number = models.CharField(max_length=30)
+    parent_name = models.CharField(max_length=160, blank=True)
+    address = models.TextField(blank=True)
+    mobile_number = models.CharField(max_length=30, blank=True)
     block = models.CharField(max_length=120, blank=True)
     district = models.CharField(max_length=120, blank=True)
     state = models.CharField(max_length=120, blank=True)
