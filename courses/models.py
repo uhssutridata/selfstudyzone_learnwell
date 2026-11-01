@@ -137,12 +137,15 @@ class UserProfile(models.Model):
 
 class StudentDetails(models.Model):
     profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name="student_details")
+    registered_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, related_name="assisted_students", blank=True, null=True)
     student_name = models.CharField(max_length=160, blank=True)
     father_name = models.CharField(max_length=160, blank=True)
     mother_name = models.CharField(max_length=160, blank=True)
     school_name = models.CharField(max_length=200, blank=True)
     class_name = models.CharField(max_length=40, blank=True)
     roll_number = models.CharField(max_length=40, blank=True)
+    address = models.TextField(blank=True)
+    parent_mobile_number = models.CharField(max_length=30, blank=True)
     block = models.CharField(max_length=120, blank=True)
     district = models.CharField(max_length=120, blank=True)
     state = models.CharField(max_length=120, blank=True)

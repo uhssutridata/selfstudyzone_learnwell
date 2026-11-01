@@ -70,7 +70,11 @@ class CourseAdmin(admin.ModelAdmin):
 admin.site.register(Enrollment)
 admin.site.register(LessonProgress)
 admin.site.register(UserProfile)
-admin.site.register(StudentDetails)
+@admin.register(StudentDetails)
+class StudentDetailsAdmin(admin.ModelAdmin):
+    list_display = ("student_name", "school_name", "class_name", "registered_by")
+    list_filter = ("school_name", "class_name")
+    search_fields = ("student_name", "father_name", "mother_name", "school_name", "registered_by__username")
 
 @admin.register(TeacherDetails)
 class TeacherDetailsAdmin(admin.ModelAdmin):

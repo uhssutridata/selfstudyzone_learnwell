@@ -42,21 +42,51 @@ class StudentRegistrationForm(RegistrationForm):
     school_name = forms.CharField(max_length=200, label="School name", required=False)
     class_name = forms.CharField(max_length=40, label="Class", required=False)
     roll_number = forms.CharField(max_length=40, label="Roll number", required=False)
+    address = forms.CharField(widget=forms.Textarea(attrs={"rows": 3}), required=False, label="Address")
+    parent_mobile_number = forms.CharField(max_length=30, required=False, label="Parent mobile number")
     block = forms.CharField(max_length=120, required=False)
     district = forms.CharField(max_length=120, required=False)
     state = forms.CharField(max_length=120, required=False)
 
     class Meta(RegistrationForm.Meta):
-        fields = ("student_name", "username", "father_name", "mother_name", "school_name", "class_name", "roll_number", "block", "district", "state")
+        fields = ("student_name", "username", "father_name", "mother_name", "school_name", "class_name", "roll_number", "address", "parent_mobile_number", "block", "district", "state")
 
     def save(self, commit=True):
         user = super().save(commit=commit)
         if commit:
             profile = self.save_profile(user, UserProfile.Role.STUDENT)
             StudentDetails.objects.create(profile=profile, **{key: self.cleaned_data[key] for key in (
-                "student_name", "father_name", "mother_name", "school_name", "class_name", "roll_number", "block", "district", "state"
+                "student_name", "father_name", "mother_name", "school_name", "class_name", "roll_number", "address", "parent_mobile_number", "block", "district", "state"
             )})
         return user
+
+
+class TeacherAssistedStudentForm(forms.ModelForm):
+    class Meta:
+        model = StudentDetails
+        fields = ("student_name", "father_name", "mother_name", "class_name", "roll_number", "school_name", "address", "parent_mobile_number", "block", "district", "state")
+        labels = {
+            "student_name": "Student full name",
+            "father_name": "Father's name",
+            "mother_name": "Mother's name",
+            "class_name": "Class",
+            "roll_number": "Roll number",
+            "school_name": "School name",
+            "address": "Address",
+            "parent_mobile_number": "Parent mobile number",
+        }
+        widgets = {"address": forms.Textarea(attrs={"rows": 3})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name in self.fields:
+            self.fields[name].required = True
+
+    def clean_parent_mobile_number(self):
+        value = self.cleaned_data["parent_mobile_number"].strip()
+        if not re.fullmatch(r"[+()\-\d\s]{7,20}", value):
+            raise forms.ValidationError("Enter a valid parent mobile number.")
+        return value
 
 
 class TeacherRegistrationForm(RegistrationForm):
@@ -153,7 +183,7 @@ class StudentProfileForm(ProfileAvatarMixin, forms.ModelForm):
     avatar = forms.ImageField(required=False, label="Profile photo")
     class Meta:
         model = StudentDetails
-        fields = ("student_name", "father_name", "mother_name", "school_name", "class_name", "roll_number", "block", "district", "state")
+        fields = ("student_name", "father_name", "mother_name", "school_name", "class_name", "roll_number", "address", "parent_mobile_number", "block", "district", "state")
         labels = {"student_name": "Full name"}
 
 

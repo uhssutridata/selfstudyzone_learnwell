@@ -3,14 +3,16 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.models import User
+from django.db import transaction
 from django.db.models import F, Q
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.defaultfilters import slugify
+import secrets
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import ListView, DetailView
 from django.utils import timezone
-from .forms import ExamResultForm, HomeworkStatusForm, ParentProfileForm, ParentRegistrationForm, RoleAuthenticationForm, StudentProfileForm, StudentRegistrationForm, StudentSearchForm, TeacherProfileForm, TeacherRegistrationForm
+from .forms import ExamResultForm, HomeworkStatusForm, ParentProfileForm, ParentRegistrationForm, RoleAuthenticationForm, StudentProfileForm, StudentRegistrationForm, StudentSearchForm, TeacherAssistedStudentForm, TeacherProfileForm, TeacherRegistrationForm
 from .models import Course, Enrollment, HomePageFeedback, HomePageNotice, HomePagePerformanceHighlight, Lesson, LessonProgress, ParentDetails, ParentWatchlist, StudyTime, StudentDetails, Subscription, TeacherDetails, UserProfile
 
 
@@ -274,6 +276,27 @@ def teacher_students(request):
     if not _has_role(request, UserProfile.Role.TEACHER, verified_teacher=True):
         return render(request, "courses/teacher_students.html", {"teacher_verified": False}, status=403)
     teacher = get_object_or_404(TeacherDetails, profile__user=request.user, is_verified=True)
+    student_form = TeacherAssistedStudentForm(request.POST or None)
+    if request.method == "POST" and student_form.is_valid():
+        student_name = student_form.cleaned_data["student_name"].strip()
+        username_base = slugify("-".join((student_name, student_form.cleaned_data["block"], student_form.cleaned_data["district"])))[:150].strip("-") or "student"
+        username = username_base
+        serial = 2
+        while User.objects.filter(username__iexact=username).exists():
+            suffix = f"-{serial}"
+            username = f"{username_base[:150 - len(suffix)]}{suffix}"
+            serial += 1
+        password = secrets.token_urlsafe(18)
+        with transaction.atomic():
+            student_user = User.objects.create_user(username=username, password=password, first_name=student_name)
+            student_profile = UserProfile.objects.create(user=student_user, role=UserProfile.Role.STUDENT)
+            student_details = student_form.save(commit=False)
+            student_details.profile = student_profile
+            student_details.registered_by = request.user
+            student_details.save()
+        request.session["teacher_student_credentials"] = {"name": student_name, "username": username, "password": password}
+        messages.success(request, f"{student_name} was registered successfully. Share the login details below with the student.")
+        return redirect("teacher-students")
     form = StudentSearchForm(request.GET or None)
     students = StudentDetails.objects.none()
     if form.is_valid():
@@ -281,9 +304,10 @@ def teacher_students(request):
         if len(query) >= 3:
             students = StudentDetails.objects.filter(student_name__icontains=query)
             if not teacher.is_private_tutor and not request.user.is_staff:
-                students = students.filter(school_name__iexact=teacher.school_name)
+                students = students.filter(Q(school_name__iexact=teacher.school_name) | Q(registered_by=request.user))
             students = students.select_related("profile__user").order_by("student_name")[:30]
-    return render(request, "courses/teacher_students.html", {"form": form, "students": students, "teacher_verified": True})
+    credentials = request.session.pop("teacher_student_credentials", None)
+    return render(request, "courses/teacher_students.html", {"form": form, "students": students, "student_form": student_form, "new_student_credentials": credentials, "teacher_verified": True})
 
 
 @login_required
@@ -293,7 +317,7 @@ def teacher_student_detail(request, student_id):
     teacher = get_object_or_404(TeacherDetails, profile__user=request.user, is_verified=True)
     permitted_students = StudentDetails.objects.select_related("profile__user")
     if not teacher.is_private_tutor and not request.user.is_staff:
-        permitted_students = permitted_students.filter(school_name__iexact=teacher.school_name)
+        permitted_students = permitted_students.filter(Q(school_name__iexact=teacher.school_name) | Q(registered_by=request.user))
     student = get_object_or_404(permitted_students, pk=student_id)
     exam_form = ExamResultForm(request.POST if request.method == "POST" and request.POST.get("record_type") == "exam" else None)
     homework_form = HomeworkStatusForm(request.POST if request.method == "POST" and request.POST.get("record_type") == "homework" else None)
