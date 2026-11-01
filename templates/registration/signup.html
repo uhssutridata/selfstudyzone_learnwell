@@ -30,19 +30,32 @@
     </article>
   </div>
 </section>
-{% if selected_role %}<section class="auth-wrap signup-form-section" id="signup-form">
-  <div class="auth-card">
+{% if selected_role %}<section class="signup-form-section signup-form-shell role-{{ selected_role }}" id="signup-form">
+  <div class="signup-side-note">
+    <span class="signup-step">01 <i></i> 02</span>
+    <span class="eyebrow">YOUR LEARNWELL SPACE</span>
+    {% if selected_role == 'student' %}<div class="signup-symbol" aria-hidden="true">✳</div><h2>Small steps.<br><em>Big discoveries.</em></h2><p>Create your student account and start building a learning routine that works for you.</p>
+    {% elif selected_role == 'teacher' %}<div class="signup-symbol" aria-hidden="true">↗</div><h2>Make knowledge<br><em>go further.</em></h2><p>Set up your teacher space and bring your lessons to more learners.</p>
+    {% else %}<div class="signup-symbol" aria-hidden="true">♡</div><h2>Be part of<br><em>their progress.</em></h2><p>Create your parent space to follow the learning journey of your children.</p>{% endif %}
+    <span class="signup-trust">No lengthy setup. You can finish your profile later.</span>
+  </div>
+  <div class="auth-card signup-auth-card">
+    <a class="signup-back" href="{% url 'signup' %}">← All account types</a>
     <span class="eyebrow">{{ role_label|upper }} REGISTRATION</span>
-    <h2>{{ role_label }} account details</h2>
-    <form method="post">{% csrf_token %}<input type="hidden" name="role" value="{{ selected_role }}">{{ form.non_field_errors }}
+    <h2>Let’s get you started.</h2>
+    <p class="signup-form-lead">Create your login, then add the rest of your details whenever you’re ready.</p>
+    <form method="post" class="signup-fields">{% csrf_token %}<input type="hidden" name="role" value="{{ selected_role }}">{{ form.non_field_errors }}
       {% for field in form %}
-        <label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
+        <div class="signup-field{% if field.name == 'subjects' %} signup-field-wide{% endif %}{% if field.name == 'username' %} signup-username-field{% endif %}">
+        <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span class="required-mark">*</span>{% else %}<span class="optional-mark">Optional</span>{% endif %}</label>
+        {{ field }}
         {% if field.name == 'username' %}<div class="username-suggestion" data-suggestion-box hidden><span data-suggestion-message></span> <button type="button" class="suggestion-choice" data-suggestion-choice></button></div>{% endif %}
         {% if field.help_text %}<div class="help-text">{{ field.help_text|safe }}</div>{% endif %}{{ field.errors }}
+        </div>
       {% endfor %}
-      <button class="button button-wide">Create my account →</button>
+      <div class="signup-submit"><button class="button button-wide">Create my account <span>→</span></button><p><span aria-hidden="true">●</span> Your information is kept private and secure.</p></div>
     </form>
-    {% if selected_role == 'parent' %}<p class="role-hint">After creating your account, you’ll search for students and request access. The school must approve each request before performance details are shown.</p>{% endif %}
+    {% if selected_role == 'parent' %}<p class="role-hint">After creating your account, search for your children and request access. Their school will approve access before performance details are shown.</p>{% endif %}
     <p class="auth-switch">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
   </div>
 </section>{% else %}<div class="signup-prompt" id="signup-form">Select one of the account types above to open its registration form.</div>{% endif %}
