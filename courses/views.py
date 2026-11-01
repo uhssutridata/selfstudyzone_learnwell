@@ -268,8 +268,10 @@ def parent_watchlist(request):
 
 @login_required
 def teacher_students(request):
-    if not _has_role(request, UserProfile.Role.TEACHER, verified_teacher=True):
+    if not _has_role(request, UserProfile.Role.TEACHER):
         return HttpResponseForbidden("Teacher student search is available after an administrator verifies your teacher account.")
+    if not _has_role(request, UserProfile.Role.TEACHER, verified_teacher=True):
+        return render(request, "courses/teacher_students.html", {"teacher_verified": False}, status=403)
     teacher = get_object_or_404(TeacherDetails, profile__user=request.user, is_verified=True)
     form = StudentSearchForm(request.GET or None)
     students = StudentDetails.objects.none()
@@ -280,7 +282,7 @@ def teacher_students(request):
             if not teacher.is_private_tutor and not request.user.is_staff:
                 students = students.filter(school_name__iexact=teacher.school_name)
             students = students.select_related("profile__user").order_by("student_name")[:30]
-    return render(request, "courses/teacher_students.html", {"form": form, "students": students})
+    return render(request, "courses/teacher_students.html", {"form": form, "students": students, "teacher_verified": True})
 
 
 @login_required

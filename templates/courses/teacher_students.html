@@ -1,3 +1,9 @@
 {% extends 'base.html' %}{% block title %}Find students — Learnwell{% endblock %}{% block content %}
 <section class="dashboard-heading"><span class="eyebrow">TEACHER SPACE</span><h1>Student<br><em>directory.</em></h1><p>Search by student name to review details and record exam or homework updates.</p></section>
-<section class="content-section"><form class="student-search" method="get">{{ form.q.label_tag }}{{ form.q }}<button class="button">Search →</button></form><div class="student-results">{% for student in students %}<article class="student-result"><div><h3>{{ student.student_name }}</h3><p>Father: {{ student.father_name }} · Mother: {{ student.mother_name }}</p><p>Class {{ student.class_name }} · {{ student.school_name }}</p></div><a class="button button-small" href="{% url 'teacher-student-detail' student.id %}">Open record →</a></article>{% empty %}{% if form.is_bound %}<p class="muted">No students found. Search with at least three letters.</p>{% endif %}{% endfor %}</div></section>{% endblock %}
+<section class="content-section">
+{% if not teacher_verified %}
+  <article class="teacher-access-card"><span class="teacher-access-icon" aria-hidden="true">✓</span><div><span class="eyebrow">ACCOUNT REVIEW</span><h2>Verification in progress</h2><p>An administrator needs to verify your teacher account before you can search for students or manage their records. Once approved, this page will show the student directory.</p></div></article>
+{% else %}
+  <form class="student-search" method="get">{{ form.q.label_tag }}{{ form.q }}<button class="button">Search →</button></form><div class="student-results">{% for student in students %}<article class="student-result"><div><h3>{{ student.student_name }}</h3><p>Father: {{ student.father_name }} · Mother: {{ student.mother_name }}</p><p>Class {{ student.class_name }} · {{ student.school_name }}</p></div><a class="button button-small" href="{% url 'teacher-student-detail' student.id %}">Open record →</a></article>{% empty %}{% if form.is_bound %}<p class="muted">No students found. Search with at least three letters.</p>{% endif %}{% endfor %}</div>
+{% endif %}
+</section>{% endblock %}
