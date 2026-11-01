@@ -1,0 +1,10 @@
+<section class="home-story-section performance-section">
+  <div class="story-inner">
+    <div class="story-heading"><span class="eyebrow">{{ home_settings.performance_eyebrow }}</span><h2>{{ home_settings.performance_title }}</h2></div>
+    <div class="performance-grid">
+      {% for highlight in performance_highlights %}
+        <article class="performance-card"><div class="performance-mark" aria-hidden="true">↗</div><span class="performance-kicker">{{ highlight.class_label|default:"LEARNER SPOTLIGHT" }}</span><h3>{{ highlight.title }}</h3><p>{{ highlight.description }}</p><div class="performance-foot"><span>{{ highlight.student_display_name|default:"A Learnwell learner" }}</span>{% if highlight.metric_value %}<strong><small>{{ highlight.metric_label }}</small>{{ highlight.metric_value }}</strong>{% endif %}</div></article>
+      {% empty %}<article class="story-empty">{{ home_settings.performance_empty_text }}</article>{% endfor %}
+    </div>
+  </div>
+</section>

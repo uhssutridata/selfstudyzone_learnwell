@@ -11,7 +11,7 @@ from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import ListView, DetailView
 from django.utils import timezone
 from .forms import ExamResultForm, HomeworkStatusForm, ParentProfileForm, ParentRegistrationForm, RoleAuthenticationForm, StudentProfileForm, StudentRegistrationForm, StudentSearchForm, TeacherProfileForm, TeacherRegistrationForm
-from .models import Course, Enrollment, Lesson, LessonProgress, ParentDetails, ParentWatchlist, StudyTime, StudentDetails, Subscription, TeacherDetails, UserProfile
+from .models import Course, Enrollment, HomePageFeedback, HomePageNotice, HomePagePerformanceHighlight, Lesson, LessonProgress, ParentDetails, ParentWatchlist, StudyTime, StudentDetails, Subscription, TeacherDetails, UserProfile
 
 
 class RoleLoginView(LoginView):
@@ -54,6 +54,9 @@ class CourseListView(ListView):
         ctx["query"] = self.request.GET.get("q", "")
         ctx["categories"] = Course.objects.filter(published=True).values_list("category", flat=True).distinct()
         ctx["selected_category"] = self.request.GET.get("category", "")
+        ctx["home_notices"] = HomePageNotice.objects.filter(is_active=True)[:4]
+        ctx["performance_highlights"] = HomePagePerformanceHighlight.objects.filter(is_published=True)[:3]
+        ctx["home_feedback"] = HomePageFeedback.objects.filter(is_published=True)[:6]
         return ctx
 
 class CourseDetailView(DetailView):

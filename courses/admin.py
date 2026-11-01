@@ -1,6 +1,6 @@
 from django.contrib import admin, messages
 from django.utils import timezone
-from .models import Course, Enrollment, ExamResult, HomePageSettings, HomeworkStatus, Lesson, LessonProgress, ParentChild, ParentDetails, ParentWatchlist, StudentDetails, StudyTime, Subscription, TeacherDetails, UserProfile
+from .models import Course, Enrollment, ExamResult, HomePageFeedback, HomePageNotice, HomePagePerformanceHighlight, HomePageSettings, HomeworkStatus, Lesson, LessonProgress, ParentChild, ParentDetails, ParentWatchlist, StudentDetails, StudyTime, Subscription, TeacherDetails, UserProfile
 
 
 @admin.register(HomePageSettings)
@@ -12,6 +12,9 @@ class HomePageSettingsAdmin(admin.ModelAdmin):
         ("Welcome section", {"fields": ("hero_eyebrow", "hero_title", "hero_highlight", "hero_description", "search_placeholder", "search_button")}),
         ("Illustration", {"fields": ("illustration_text", "illustration_caption")}),
         ("Course library", {"fields": ("library_eyebrow", "library_title", "lesson_label", "previous_page_label", "next_page_label", "empty_title", "empty_text")}),
+        ("Notices section", {"fields": ("notice_eyebrow", "notice_title", "notice_empty_text")}),
+        ("Performance section", {"fields": ("performance_eyebrow", "performance_title", "performance_empty_text")}),
+        ("Feedback section", {"fields": ("feedback_eyebrow", "feedback_title", "feedback_empty_text")}),
     )
     readonly_fields = ()
 
@@ -20,6 +23,34 @@ class HomePageSettingsAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+@admin.register(HomePageNotice)
+class HomePageNoticeAdmin(admin.ModelAdmin):
+    list_display = ("title", "is_active", "published_at")
+    list_filter = ("is_active", "published_at")
+    search_fields = ("title", "message")
+    list_editable = ("is_active",)
+
+
+@admin.register(HomePagePerformanceHighlight)
+class HomePagePerformanceHighlightAdmin(admin.ModelAdmin):
+    list_display = ("title", "student_display_name", "metric_value", "is_published", "published_at")
+    list_filter = ("is_published", "published_at")
+    search_fields = ("title", "student_display_name", "description")
+    list_editable = ("is_published",)
+    fieldsets = (
+        ("Highlight", {"fields": ("title", "description", "student_display_name", "class_label")}),
+        ("Result shown on homepage", {"fields": ("metric_label", "metric_value", "is_published")}),
+    )
+
+
+@admin.register(HomePageFeedback)
+class HomePageFeedbackAdmin(admin.ModelAdmin):
+    list_display = ("display_name", "role", "is_published", "created_at")
+    list_filter = ("role", "is_published", "created_at")
+    search_fields = ("display_name", "quote")
+    list_editable = ("is_published",)
 
 class LessonInline(admin.TabularInline):
     model = Lesson

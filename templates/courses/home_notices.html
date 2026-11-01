@@ -1,0 +1,10 @@
+<section class="home-story-section notice-section">
+  <div class="story-inner">
+    <div class="story-heading"><span class="eyebrow">{{ home_settings.notice_eyebrow }}</span><h2>{{ home_settings.notice_title }}</h2></div>
+    <div class="notice-grid">
+      {% for notice in home_notices %}
+        <article class="notice-card"><span class="notice-pin" aria-hidden="true">✳</span><div><time datetime="{{ notice.published_at|date:'c' }}">{{ notice.published_at|date:"M j, Y" }}</time><h3>{{ notice.title }}</h3><p>{{ notice.message|linebreaksbr }}</p></div></article>
+      {% empty %}<article class="story-empty">{{ home_settings.notice_empty_text }}</article>{% endfor %}
+    </div>
+  </div>
+</section>

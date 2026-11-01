@@ -42,6 +42,15 @@ class HomePageSettings(models.Model):
     lesson_label = models.CharField(max_length=40, default="lessons")
     previous_page_label = models.CharField(max_length=40, default="Previous")
     next_page_label = models.CharField(max_length=40, default="Next")
+    notice_eyebrow = models.CharField(max_length=100, default="COMMUNITY BOARD")
+    notice_title = models.CharField(max_length=140, default="Notices")
+    notice_empty_text = models.CharField(max_length=200, default="There are no new notices right now.")
+    performance_eyebrow = models.CharField(max_length=100, default="STUDENT SPOTLIGHT")
+    performance_title = models.CharField(max_length=140, default="Latest student highlights")
+    performance_empty_text = models.CharField(max_length=200, default="Student highlights will appear here soon.")
+    feedback_eyebrow = models.CharField(max_length=100, default="KIND WORDS")
+    feedback_title = models.CharField(max_length=140, default="From our learning community")
+    feedback_empty_text = models.CharField(max_length=200, default="Community feedback will appear here soon.")
     empty_title = models.CharField(max_length=160, default="Your next favorite course is on its way.")
     empty_text = models.CharField(max_length=240, default="Try a different search, or check back soon.")
 
@@ -55,6 +64,61 @@ class HomePageSettings(models.Model):
     def save(self, *args, **kwargs):
         self.pk = 1
         super().save(*args, **kwargs)
+
+
+class HomePageNotice(models.Model):
+    title = models.CharField(max_length=140)
+    message = models.TextField(max_length=800)
+    is_active = models.BooleanField(default=True)
+    published_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-published_at", "-id"]
+        verbose_name = "Home page notice"
+        verbose_name_plural = "Home page notices"
+
+    def __str__(self):
+        return self.title
+
+
+class HomePagePerformanceHighlight(models.Model):
+    title = models.CharField(max_length=140)
+    description = models.TextField(max_length=500, blank=True)
+    student_display_name = models.CharField(max_length=100, blank=True, help_text="Use a first name, nickname, or an anonymous label. Do not publish private student records.")
+    class_label = models.CharField(max_length=60, blank=True)
+    metric_label = models.CharField(max_length=60, default="Achievement")
+    metric_value = models.CharField(max_length=60, blank=True)
+    is_published = models.BooleanField(default=False)
+    published_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-published_at", "-id"]
+        verbose_name = "Home page performance highlight"
+        verbose_name_plural = "Home page performance highlights"
+
+    def __str__(self):
+        return self.title
+
+
+class HomePageFeedback(models.Model):
+    class Role(models.TextChoices):
+        TEACHER = "teacher", "Teacher"
+        STUDENT = "student", "Student"
+        PARENT = "parent", "Parent"
+
+    quote = models.TextField(max_length=600)
+    display_name = models.CharField(max_length=100)
+    role = models.CharField(max_length=12, choices=Role.choices)
+    is_published = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        verbose_name = "Home page feedback"
+        verbose_name_plural = "Home page feedback"
+
+    def __str__(self):
+        return f"{self.get_role_display()} feedback from {self.display_name}"
 
 
 class UserProfile(models.Model):
