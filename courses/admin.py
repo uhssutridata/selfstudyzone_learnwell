@@ -1,6 +1,6 @@
 from django.contrib import admin, messages
 from django.utils import timezone
-from .models import Course, Enrollment, ExamResult, HomePageFeedback, HomePageNotice, HomePagePerformanceHighlight, HomePageSettings, HomeworkStatus, Lesson, LessonProgress, ParentChild, ParentDetails, ParentWatchlist, StudentDetails, StudyTime, Subscription, TeacherDetails, UserProfile
+from .models import Course, Enrollment, ExamResult, HomePageFeedback, HomePageNotice, HomePagePerformanceHighlight, HomePageSettings, HomeworkStatus, HomeworkSubmission, Lesson, LessonProgress, ParentChild, ParentDetails, ParentWatchlist, StudentDetails, StudyTime, Subscription, TeacherDetails, TeacherStudentApproval, UserProfile
 
 
 @admin.register(HomePageSettings)
@@ -66,6 +66,51 @@ class CourseAdmin(admin.ModelAdmin):
     search_fields = ("title", "description", "instructor__username")
     prepopulated_fields = {"slug": ("title",)}
     inlines = [LessonInline]
+
+    def has_module_permission(self, request):
+        return request.user.is_superuser
+
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_add_permission(self, request):
+        return request.user.is_superuser
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "instructor":
+            kwargs["queryset"] = db_field.remote_field.model.objects.filter(profile__role=UserProfile.Role.TEACHER)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+@admin.register(TeacherStudentApproval)
+class TeacherStudentApprovalAdmin(admin.ModelAdmin):
+    list_display = ("student", "teacher", "approved_by", "approved_at")
+    list_filter = ("approved_at",)
+    search_fields = ("student__student_name", "teacher__username", "teacher__first_name")
+    readonly_fields = ("approved_by", "approved_at")
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "teacher":
+            kwargs["queryset"] = db_field.remote_field.model.objects.filter(profile__role=UserProfile.Role.TEACHER)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.approved_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(HomeworkSubmission)
+class HomeworkSubmissionAdmin(admin.ModelAdmin):
+    list_display = ("title", "student", "submitted_at", "evaluated_by", "evaluated_at")
+    search_fields = ("title", "student__student_name")
+    readonly_fields = ("submitted_at", "evaluated_by", "evaluated_at")
 
 admin.site.register(Enrollment)
 admin.site.register(LessonProgress)

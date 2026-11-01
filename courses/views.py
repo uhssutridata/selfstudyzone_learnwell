@@ -12,8 +12,8 @@ import secrets
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import ListView, DetailView
 from django.utils import timezone
-from .forms import ExamResultForm, HomeworkStatusForm, ParentProfileForm, ParentRegistrationForm, RoleAuthenticationForm, StudentProfileForm, StudentRegistrationForm, StudentSearchForm, TeacherAssistedStudentForm, TeacherProfileForm, TeacherRegistrationForm
-from .models import Course, Enrollment, HomePageFeedback, HomePageNotice, HomePagePerformanceHighlight, Lesson, LessonProgress, ParentDetails, ParentWatchlist, StudyTime, StudentDetails, Subscription, TeacherDetails, UserProfile
+from .forms import ExamResultForm, HomeworkEvaluationForm, HomeworkSubmissionForm, HomeworkStatusForm, ParentProfileForm, ParentRegistrationForm, RoleAuthenticationForm, StudentProfileForm, StudentRegistrationForm, StudentSearchForm, TeacherAssistedStudentForm, TeacherProfileForm, TeacherRegistrationForm
+from .models import Course, Enrollment, HomePageFeedback, HomePageNotice, HomePagePerformanceHighlight, HomeworkSubmission, Lesson, LessonProgress, ParentDetails, ParentWatchlist, StudyTime, StudentDetails, Subscription, TeacherDetails, TeacherStudentApproval, UserProfile
 
 
 class RoleLoginView(LoginView):
@@ -88,8 +88,9 @@ class CourseDetailView(DetailView):
 def dashboard(request):
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
     if profile.role == UserProfile.Role.TEACHER:
-        courses = Course.objects.filter(instructor=request.user).prefetch_related("lessons")
-        return render(request, "courses/dashboard.html", {"role": profile.role, "teacher_courses": courses})
+        authorized_students = _teacher_student_queryset(request.user)
+        pending_homework = HomeworkSubmission.objects.filter(student__in=authorized_students, evaluated_at__isnull=True).count()
+        return render(request, "courses/dashboard.html", {"role": profile.role, "pending_homework": pending_homework})
     if profile.role == UserProfile.Role.PARENT:
         parent = ParentDetails.objects.filter(profile=profile).prefetch_related("children").first()
         watchlist = ParentWatchlist.objects.filter(parent=parent).select_related("student", "student__profile__user", "student__study_time").prefetch_related("student__exam_results", "student__homework_statuses") if parent else []
@@ -244,6 +245,12 @@ def _has_role(request, role, verified_teacher=False):
     return True
 
 
+def _teacher_student_queryset(user):
+    return StudentDetails.objects.filter(
+        Q(registered_by=user) | Q(teacher_approvals__teacher=user)
+    ).distinct()
+
+
 @login_required
 def parent_watchlist(request):
     if not _has_role(request, UserProfile.Role.PARENT):
@@ -305,10 +312,8 @@ def teacher_students(request):
     if form.is_valid():
         query = form.cleaned_data["q"].strip()
         if len(query) >= 3:
-            students = StudentDetails.objects.filter(student_name__icontains=query)
-            if not teacher.is_private_tutor and not request.user.is_staff:
-                students = students.filter(Q(school_name__iexact=teacher.school_name) | Q(registered_by=request.user))
-            students = students.select_related("profile__user").order_by("student_name")[:30]
+            students = _teacher_student_queryset(request.user).filter(student_name__icontains=query)
+            students = students.select_related("profile__user").prefetch_related("homework_submissions").order_by("student_name")[:30]
     credentials = request.session.pop("teacher_student_credentials", None)
     return render(request, "courses/teacher_students.html", {"form": form, "students": students, "student_form": student_form, "new_student_credentials": credentials, "teacher_verified": True})
 
@@ -318,27 +323,41 @@ def teacher_student_detail(request, student_id):
     if not _has_role(request, UserProfile.Role.TEACHER, verified_teacher=True):
         return HttpResponseForbidden("Teacher student records require a verified teacher account.")
     teacher = get_object_or_404(TeacherDetails, profile__user=request.user, is_verified=True)
-    permitted_students = StudentDetails.objects.select_related("profile__user")
-    if not teacher.is_private_tutor and not request.user.is_staff:
-        permitted_students = permitted_students.filter(Q(school_name__iexact=teacher.school_name) | Q(registered_by=request.user))
+    permitted_students = _teacher_student_queryset(request.user).select_related("profile__user")
     student = get_object_or_404(permitted_students, pk=student_id)
-    exam_form = ExamResultForm(request.POST if request.method == "POST" and request.POST.get("record_type") == "exam" else None)
-    homework_form = HomeworkStatusForm(request.POST if request.method == "POST" and request.POST.get("record_type") == "homework" else None)
-    if request.method == "POST" and request.POST.get("record_type") == "exam" and exam_form.is_valid():
-        exam = exam_form.save(commit=False)
-        exam.student = student
-        exam.recorded_by = request.user
-        exam.save()
-        messages.success(request, "Exam result saved.")
-        return redirect("teacher-student-detail", student_id=student.id)
-    if request.method == "POST" and request.POST.get("record_type") == "homework" and homework_form.is_valid():
-        homework = homework_form.save(commit=False)
-        homework.student = student
-        homework.recorded_by = request.user
-        homework.save()
-        messages.success(request, "Homework status saved.")
-        return redirect("teacher-student-detail", student_id=student.id)
-    return render(request, "courses/teacher_student_detail.html", {"student": student, "exam_form": exam_form, "homework_form": homework_form})
+    submissions = HomeworkSubmission.objects.filter(student=student).select_related("evaluated_by")
+    if request.method == "POST":
+        submission_id = request.POST.get("submission_id")
+        submission = get_object_or_404(submissions, pk=submission_id) if submission_id else None
+        if submission is None:
+            return HttpResponseForbidden("Select a submitted homework to evaluate.")
+        evaluation_form = HomeworkEvaluationForm(request.POST, instance=submission)
+        if evaluation_form.is_valid():
+            evaluated = evaluation_form.save(commit=False)
+            evaluated.evaluated_by = request.user
+            evaluated.evaluated_at = timezone.now()
+            evaluated.save(update_fields=["teacher_feedback", "evaluated_by", "evaluated_at"])
+            messages.success(request, "Homework feedback saved.")
+            return redirect("teacher-student-detail", student_id=student.id)
+    else:
+        evaluation_form = HomeworkEvaluationForm()
+    return render(request, "courses/teacher_student_detail.html", {"student": student, "submissions": submissions, "evaluation_form": evaluation_form})
+
+
+@login_required
+def student_homework(request):
+    if not _has_role(request, UserProfile.Role.STUDENT):
+        return HttpResponseForbidden("Student accounts only.")
+    student = get_object_or_404(StudentDetails, profile__user=request.user)
+    form = HomeworkSubmissionForm(request.POST or None, request.FILES or None)
+    if request.method == "POST" and form.is_valid():
+        submission = form.save(commit=False)
+        submission.student = student
+        submission.save()
+        messages.success(request, "Your homework was uploaded for teacher review.")
+        return redirect("student-homework")
+    submissions = HomeworkSubmission.objects.filter(student=student).select_related("evaluated_by")
+    return render(request, "courses/student_homework.html", {"form": form, "submissions": submissions})
 
 
 @login_required

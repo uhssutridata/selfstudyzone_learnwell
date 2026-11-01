@@ -5,7 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.forms.widgets import CheckboxSelectMultiple
 
-from .models import ExamResult, HomeworkStatus, ParentDetails, StudentDetails, TeacherDetails, UserProfile
+from .models import ExamResult, HomeworkStatus, HomeworkSubmission, ParentDetails, StudentDetails, TeacherDetails, UserProfile
 
 TEACHING_SUBJECTS = [
     ("mathematics", "Mathematics"),
@@ -279,6 +279,22 @@ class HomeworkStatusForm(forms.ModelForm):
         model = HomeworkStatus
         fields = ("title", "is_done")
         labels = {"is_done": "Homework completed"}
+
+
+class HomeworkSubmissionForm(forms.ModelForm):
+    class Meta:
+        model = HomeworkSubmission
+        fields = ("title", "notes", "attachment")
+        labels = {"title": "Homework title", "notes": "Notes for the teacher", "attachment": "Upload your homework"}
+        widgets = {"notes": forms.Textarea(attrs={"rows": 3})}
+
+
+class HomeworkEvaluationForm(forms.ModelForm):
+    class Meta:
+        model = HomeworkSubmission
+        fields = ("teacher_feedback",)
+        labels = {"teacher_feedback": "Feedback for the student"}
+        widgets = {"teacher_feedback": forms.Textarea(attrs={"rows": 4})}
 
 
 class RoleAuthenticationForm(AuthenticationForm):

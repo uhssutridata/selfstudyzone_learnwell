@@ -153,6 +153,21 @@ class StudentDetails(models.Model):
     def __str__(self):
         return self.student_name
 
+
+class TeacherStudentApproval(models.Model):
+    """Administrator-granted access for a teacher to a student record."""
+    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="approved_student_links")
+    student = models.ForeignKey(StudentDetails, on_delete=models.CASCADE, related_name="teacher_approvals")
+    approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="granted_student_approvals")
+    approved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["teacher", "student"], name="unique_teacher_student_approval")]
+        ordering = ["-approved_at"]
+
+    def __str__(self):
+        return f"{self.student.student_name} approved for {self.teacher.username}"
+
 class TeacherDetails(models.Model):
     profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name="teacher_details")
     subject = models.CharField(max_length=240, blank=True)
@@ -236,6 +251,23 @@ class HomeworkStatus(models.Model):
 
     def __str__(self):
         return f"{self.title}: {self.student.student_name}"
+
+
+class HomeworkSubmission(models.Model):
+    student = models.ForeignKey(StudentDetails, on_delete=models.CASCADE, related_name="homework_submissions")
+    title = models.CharField(max_length=180)
+    notes = models.TextField(blank=True)
+    attachment = models.FileField(upload_to="homework_submissions/%Y/%m/")
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    teacher_feedback = models.TextField(blank=True)
+    evaluated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="evaluated_homework_submissions")
+    evaluated_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-submitted_at"]
+
+    def __str__(self):
+        return f"{self.title} — {self.student.student_name}"
 
 class StudyTime(models.Model):
     student = models.OneToOneField(StudentDetails, on_delete=models.CASCADE, related_name="study_time")
