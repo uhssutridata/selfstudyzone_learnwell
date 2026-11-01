@@ -14,13 +14,21 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Open http://127.0.0.1:8000. Admin is at `/admin/`. Add a course, set a unique slug, add lessons inline, and check **Published** to make it visible in Explore. Learner signup is at `/signup/`.
+Open http://127.0.0.1:8000. Admin is at `/admin/`. A superuser creates and manages courses. Add lessons inline on a course; then open **Lessons** in admin to add multiple-choice questions. Lessons can include text, a YouTube video, an animated SVG, and homework instructions. Students take the quiz and upload homework on the lesson page. Check **Published** to make a course visible in Explore. Learner signup is at `/signup/`.
+
+To add the editable sample course with animated SVG, Manim/3Blue1Brown video lessons, quizzes, and homework, first create or retain a teacher account, then run:
+
+```bash
+python manage.py load_sample_lessons
+```
+
+The sample course is published and can be edited under **Courses**, **Lessons**, and **Lesson quiz attempts** in Django admin.
 
 ## Parent and teacher student records
 
-After parent signup, the parent is sent to Parent space to search students whose registered father or mother name matches the parent name. Access requests appear under **Admin → Parent watchlists** and must be approved before performance details are shown. Teachers can search student records after an administrator verifies the teacher profile under **Admin → Teacher details**. School teachers are limited to students at their registered school; verified private tutors can search across schools.
+After parent signup, the parent is sent to Parent space to search students whose registered father or mother name matches the parent name. Access requests appear under **Admin → Parent watchlists** and must be approved before performance details are shown. A teacher must be verified under **Admin → Teacher details** before reviewing homework. Teachers can review work from students they registered or students an administrator assigned under **Admin → Teacher student approvals**. Teachers do not create courses; superusers manage courses and lesson content.
 
-Verified teachers can record exam marks/pass status and homework completion from a student record. Student sessions report active, visible LMS time while a student is signed in. Parents with an approved watchlist link can see exam results, homework status, and recorded time in their dashboard.
+Students upload lesson homework on the lesson page. Verified teachers can open their student directory, download submissions, and leave feedback. Student sessions report active, visible LMS time while a student is signed in. Parents with an approved watchlist link can see exam results, homework status, and recorded time in their dashboard.
 
 Students start on the free subscription. They can request a paid upgrade from their dashboard; an administrator confirms payment and activates the paid plan from **Admin → Subscriptions**. No payment gateway or price is configured in this starter.
 

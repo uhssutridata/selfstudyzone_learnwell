@@ -73,6 +73,28 @@ class LessonAdmin(admin.ModelAdmin):
     search_fields = ("title", "course__title", "content")
     inlines = [LessonQuestionInline]
 
+    fieldsets = (
+        ("Lesson", {"fields": ("course", "title", "content_type", "content", "position", "duration_minutes")}),
+        ("YouTube video", {"fields": ("youtube_url",), "description": "Paste a YouTube watch, youtu.be, or embed URL. It appears inside the lesson page."}),
+        ("Animation", {"fields": ("animation_file",), "description": "Upload an animated SVG. Choose the Animated SVG lesson type above."}),
+        ("Homework", {"fields": ("homework_description",), "description": "Students can upload their completed file from the lesson page."}),
+    )
+
+    def has_module_permission(self, request):
+        return request.user.is_superuser
+
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_add_permission(self, request):
+        return request.user.is_superuser
+
+    def has_change_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
+
 
 @admin.register(LessonQuizAttempt)
 class LessonQuizAttemptAdmin(admin.ModelAdmin):
