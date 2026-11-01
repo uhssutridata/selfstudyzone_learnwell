@@ -39,6 +39,7 @@ class TeacherDetails(models.Model):
     email = models.EmailField()
     block = models.CharField(max_length=120, blank=True)
     district = models.CharField(max_length=120, blank=True)
+    state = models.CharField(max_length=120, blank=True)
 
     def __str__(self):
         return f"{self.profile.user.username} — {self.subject}"
@@ -50,6 +51,7 @@ class ParentDetails(models.Model):
     mobile_number = models.CharField(max_length=30)
     block = models.CharField(max_length=120, blank=True)
     district = models.CharField(max_length=120, blank=True)
+    state = models.CharField(max_length=120, blank=True)
 
     def __str__(self):
         return self.parent_name

@@ -52,6 +52,7 @@ class TeacherRegistrationForm(RegistrationForm):
     full_name = forms.CharField(max_length=160, label="Your name")
     block = forms.CharField(max_length=120, required=False, label="Block (optional)")
     district = forms.CharField(max_length=120, required=False, label="District (optional)")
+    state = forms.CharField(max_length=120, required=False, label="State (optional)")
     subject = forms.CharField(max_length=160, label="Subject(s) you teach")
     is_private_tutor = forms.BooleanField(required=False, label="I am a private tutor")
     school_name = forms.CharField(max_length=200, required=False, label="School name where you teach")
@@ -60,7 +61,7 @@ class TeacherRegistrationForm(RegistrationForm):
     email = forms.EmailField(label="Email address")
 
     class Meta(RegistrationForm.Meta):
-        fields = ("full_name", "username", "subject", "is_private_tutor", "school_name", "school_address", "mobile_number", "email", "block", "district")
+        fields = ("full_name", "username", "subject", "is_private_tutor", "school_name", "school_address", "mobile_number", "email", "block", "district", "state")
 
     def clean_mobile_number(self):
         value = self.cleaned_data["mobile_number"].strip()
@@ -85,7 +86,7 @@ class TeacherRegistrationForm(RegistrationForm):
             user.first_name = self.cleaned_data["full_name"]
             user.save(update_fields=["email", "first_name"])
             TeacherDetails.objects.create(profile=profile, **{key: self.cleaned_data[key] for key in (
-                "subject", "school_name", "school_address", "is_private_tutor", "mobile_number", "email", "block", "district"
+                "subject", "school_name", "school_address", "is_private_tutor", "mobile_number", "email", "block", "district", "state"
             )})
         return user
 
@@ -94,6 +95,7 @@ class ParentRegistrationForm(RegistrationForm):
     parent_name = forms.CharField(max_length=160, label="Your name")
     block = forms.CharField(max_length=120, required=False, label="Block (optional)")
     district = forms.CharField(max_length=120, required=False, label="District (optional)")
+    state = forms.CharField(max_length=120, required=False, label="State (optional)")
     address = forms.CharField(widget=forms.Textarea(attrs={"rows": 3}), label="Your address")
     mobile_number = forms.CharField(max_length=30, label="Mobile number")
     children = forms.CharField(
@@ -103,7 +105,7 @@ class ParentRegistrationForm(RegistrationForm):
     )
 
     class Meta(RegistrationForm.Meta):
-        fields = ("parent_name", "username", "address", "mobile_number", "children", "block", "district")
+        fields = ("parent_name", "username", "address", "mobile_number", "children", "block", "district", "state")
 
     def clean_mobile_number(self):
         value = self.cleaned_data["mobile_number"].strip()
@@ -131,7 +133,7 @@ class ParentRegistrationForm(RegistrationForm):
         user = super().save(commit=commit)
         if commit:
             profile = self.save_profile(user, UserProfile.Role.PARENT)
-            parent = ParentDetails.objects.create(profile=profile, parent_name=self.cleaned_data["parent_name"], address=self.cleaned_data["address"], mobile_number=self.cleaned_data["mobile_number"], block=self.cleaned_data["block"], district=self.cleaned_data["district"])
+            parent = ParentDetails.objects.create(profile=profile, parent_name=self.cleaned_data["parent_name"], address=self.cleaned_data["address"], mobile_number=self.cleaned_data["mobile_number"], block=self.cleaned_data["block"], district=self.cleaned_data["district"], state=self.cleaned_data["state"])
             ParentChild.objects.bulk_create([ParentChild(parent=parent, name=name, class_name=class_name) for name, class_name in self.cleaned_data["children"]])
         return user
 
