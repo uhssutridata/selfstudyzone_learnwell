@@ -29,19 +29,18 @@
     </article>
   </div>
 </section>
-<section class="auth-wrap signup-form-section" id="signup-form">
+{% if selected_role %}<section class="auth-wrap signup-form-section" id="signup-form">
   <div class="auth-card">
-    <span class="eyebrow">CREATE YOUR ACCOUNT</span>
-    <h2>Start your next chapter.</h2>
-    <form method="post">{% csrf_token %}{{ form.non_field_errors }}
+    <span class="eyebrow">{{ role_label|upper }} REGISTRATION</span>
+    <h2>{{ role_label }} account details</h2>
+    <form method="post">{% csrf_token %}<input type="hidden" name="role" value="{{ selected_role }}">{{ form.non_field_errors }}
       {% for field in form %}
         <label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
-        {% if field.name == 'role' %}<div class="role-hint">Choose the same role you’ll use when logging in.</div>{% endif %}
         {% if field.help_text %}<div class="help-text">{{ field.help_text|safe }}</div>{% endif %}{{ field.errors }}
       {% endfor %}
       <button class="button button-wide">Create my account →</button>
     </form>
     <p class="auth-switch">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
   </div>
-</section>
+</section>{% else %}<div class="signup-prompt" id="signup-form">Select one of the account types above to open its registration form.</div>{% endif %}
 {% endblock %}

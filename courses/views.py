@@ -5,8 +5,8 @@ from django.contrib.auth.views import LoginView
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, DetailView
-from .forms import RoleAuthenticationForm, SignUpForm
-from .models import Course, Enrollment, Lesson, LessonProgress, UserProfile
+from .forms import ParentRegistrationForm, RoleAuthenticationForm, StudentRegistrationForm, TeacherRegistrationForm
+from .models import Course, Enrollment, Lesson, LessonProgress, ParentDetails, UserProfile
 
 
 class RoleLoginView(LoginView):
@@ -58,7 +58,8 @@ def dashboard(request):
         courses = Course.objects.filter(instructor=request.user).prefetch_related("lessons")
         return render(request, "courses/dashboard.html", {"role": profile.role, "teacher_courses": courses})
     if profile.role == UserProfile.Role.PARENT:
-        return render(request, "courses/dashboard.html", {"role": profile.role, "cards": []})
+        parent = ParentDetails.objects.filter(profile=profile).prefetch_related("children").first()
+        return render(request, "courses/dashboard.html", {"role": profile.role, "cards": [], "parent_details": parent})
     enrollments = Enrollment.objects.filter(student=request.user).select_related("course", "course__instructor").prefetch_related("progress", "course__lessons")
     cards = []
     for enrollment in enrollments:
@@ -100,9 +101,16 @@ def complete_lesson(request, slug, lesson_id):
 def signup(request):
     if request.user.is_authenticated:
         return redirect("dashboard")
-    form = SignUpForm(request.POST or None, initial={"role": request.GET.get("role", "")})
-    if request.method == "POST" and form.is_valid():
+    forms_by_role = {
+        UserProfile.Role.STUDENT: StudentRegistrationForm,
+        UserProfile.Role.TEACHER: TeacherRegistrationForm,
+        UserProfile.Role.PARENT: ParentRegistrationForm,
+    }
+    role = request.POST.get("role") or request.GET.get("role", "")
+    form_class = forms_by_role.get(role)
+    form = form_class(request.POST or None) if form_class else None
+    if request.method == "POST" and form and form.is_valid():
         user = form.save()
         login(request, user)
         return redirect("dashboard")
-    return render(request, "registration/signup.html", {"form": form})
+    return render(request, "registration/signup.html", {"form": form, "selected_role": role, "role_label": UserProfile.Role(role).label if role in forms_by_role else ""})

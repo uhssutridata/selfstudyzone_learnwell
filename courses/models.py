@@ -14,6 +14,50 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"{self.user.username} ({self.get_role_display()})"
 
+class StudentDetails(models.Model):
+    profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name="student_details")
+    student_name = models.CharField(max_length=160)
+    father_name = models.CharField(max_length=160)
+    mother_name = models.CharField(max_length=160)
+    school_name = models.CharField(max_length=200)
+    class_name = models.CharField(max_length=40)
+    roll_number = models.CharField(max_length=40)
+    block = models.CharField(max_length=120)
+    district = models.CharField(max_length=120)
+    state = models.CharField(max_length=120)
+
+    def __str__(self):
+        return self.student_name
+
+class TeacherDetails(models.Model):
+    profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name="teacher_details")
+    subject = models.CharField(max_length=160)
+    school_name = models.CharField(max_length=200, blank=True)
+    school_address = models.TextField(blank=True)
+    is_private_tutor = models.BooleanField(default=False)
+    mobile_number = models.CharField(max_length=30)
+    email = models.EmailField()
+
+    def __str__(self):
+        return f"{self.profile.user.username} — {self.subject}"
+
+class ParentDetails(models.Model):
+    profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name="parent_details")
+    parent_name = models.CharField(max_length=160)
+    address = models.TextField()
+    mobile_number = models.CharField(max_length=30)
+
+    def __str__(self):
+        return self.parent_name
+
+class ParentChild(models.Model):
+    parent = models.ForeignKey(ParentDetails, on_delete=models.CASCADE, related_name="children")
+    name = models.CharField(max_length=160)
+    class_name = models.CharField(max_length=40)
+
+    def __str__(self):
+        return f"{self.name} — {self.class_name}"
+
 class Course(models.Model):
     title = models.CharField(max_length=180)
     slug = models.SlugField(unique=True)
