@@ -390,13 +390,14 @@ def teacher_students(request):
         request.session["teacher_student_credentials"] = {"name": student_name, "username": username, "password": password}
         messages.success(request, f"{student_name} was registered successfully. Share the login details below with the student.")
         return redirect("teacher-students")
-    form = StudentSearchForm(request.GET or None)
-    students = StudentDetails.objects.none()
-    if form.is_valid():
-        query = form.cleaned_data["q"].strip()
-        if len(query) >= 3:
-            students = _teacher_student_queryset(request.user).filter(student_name__icontains=query)
-            students = students.select_related("profile__user").prefetch_related("homework_submissions").order_by("student_name")[:30]
+    form = StudentSearchForm(request.GET if "q" in request.GET else None)
+    students = _teacher_student_queryset(request.user).select_related("profile__user").prefetch_related("homework_submissions").order_by("student_name")
+    if form.is_bound:
+        if form.is_valid():
+            query = form.cleaned_data["q"].strip()
+            students = students.filter(student_name__icontains=query) if len(query) >= 3 else students.none()
+        else:
+            students = students.none()
     credentials = request.session.pop("teacher_student_credentials", None)
     return render(request, "courses/teacher_students.html", {"form": form, "students": students, "student_form": student_form, "new_student_credentials": credentials, "teacher_verified": True})
 
