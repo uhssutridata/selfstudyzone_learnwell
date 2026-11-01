@@ -11,7 +11,7 @@ from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import ListView, DetailView
 from django.utils import timezone
 from .forms import ExamResultForm, HomeworkStatusForm, ParentRegistrationForm, RoleAuthenticationForm, StudentRegistrationForm, StudentSearchForm, TeacherRegistrationForm
-from .models import Course, Enrollment, Lesson, LessonProgress, ParentDetails, ParentWatchlist, StudyTime, StudentDetails, TeacherDetails, UserProfile
+from .models import Course, Enrollment, Lesson, LessonProgress, ParentDetails, ParentWatchlist, StudyTime, StudentDetails, Subscription, TeacherDetails, UserProfile
 
 
 class RoleLoginView(LoginView):
@@ -87,7 +87,28 @@ def dashboard(request):
         total = enrollment.course.lessons.count()
         done = enrollment.progress.count()
         cards.append({"enrollment": enrollment, "total": total, "done": done, "percent": round(done * 100 / total) if total else 0})
-    return render(request, "courses/dashboard.html", {"role": profile.role, "cards": cards})
+    student_details = StudentDetails.objects.filter(profile=profile).first()
+    subscription = Subscription.objects.get_or_create(student=student_details)[0] if student_details else None
+    return render(request, "courses/dashboard.html", {"role": profile.role, "cards": cards, "subscription": subscription})
+
+
+@login_required
+@require_POST
+def request_subscription_upgrade(request):
+    if not _has_role(request, UserProfile.Role.STUDENT):
+        return HttpResponseForbidden("Student accounts only.")
+    student = get_object_or_404(StudentDetails, profile__user=request.user)
+    subscription, _ = Subscription.objects.get_or_create(student=student)
+    if subscription.plan == Subscription.Plan.PAID and subscription.status == Subscription.Status.ACTIVE:
+        messages.info(request, "Your paid subscription is already active.")
+    elif subscription.status != Subscription.Status.PENDING:
+        subscription.status = Subscription.Status.PENDING
+        subscription.requested_at = timezone.now()
+        subscription.save(update_fields=["status", "requested_at", "updated_at"])
+        messages.success(request, "Your paid subscription request was sent. It will be activated after an administrator confirms payment.")
+    else:
+        messages.info(request, "Your paid subscription request is already awaiting review.")
+    return redirect("dashboard")
 
 
 @login_required

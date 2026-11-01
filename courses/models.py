@@ -122,6 +122,25 @@ class StudyTime(models.Model):
     def total_minutes(self):
         return self.seconds // 60
 
+class Subscription(models.Model):
+    class Plan(models.TextChoices):
+        FREE = "free", "Free"
+        PAID = "paid", "Paid"
+
+    class Status(models.TextChoices):
+        ACTIVE = "active", "Active"
+        PENDING = "pending", "Upgrade requested"
+
+    student = models.OneToOneField(StudentDetails, on_delete=models.CASCADE, related_name="subscription")
+    plan = models.CharField(max_length=8, choices=Plan.choices, default=Plan.FREE)
+    status = models.CharField(max_length=12, choices=Status.choices, default=Status.ACTIVE)
+    requested_at = models.DateTimeField(null=True, blank=True)
+    activated_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.student.student_name}: {self.get_plan_display()} ({self.get_status_display()})"
+
 class Course(models.Model):
     title = models.CharField(max_length=180)
     slug = models.SlugField(unique=True)

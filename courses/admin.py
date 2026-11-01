@@ -1,6 +1,6 @@
 from django.contrib import admin, messages
 from django.utils import timezone
-from .models import Course, Enrollment, ExamResult, HomeworkStatus, Lesson, LessonProgress, ParentChild, ParentDetails, ParentWatchlist, StudentDetails, StudyTime, TeacherDetails, UserProfile
+from .models import Course, Enrollment, ExamResult, HomeworkStatus, Lesson, LessonProgress, ParentChild, ParentDetails, ParentWatchlist, StudentDetails, StudyTime, Subscription, TeacherDetails, UserProfile
 
 class LessonInline(admin.TabularInline):
     model = Lesson
@@ -59,3 +59,18 @@ class ParentWatchlistAdmin(admin.ModelAdmin):
 admin.site.register(ExamResult)
 admin.site.register(HomeworkStatus)
 admin.site.register(StudyTime)
+
+@admin.register(Subscription)
+class SubscriptionAdmin(admin.ModelAdmin):
+    list_display = ("student", "plan", "status", "requested_at", "activated_at", "updated_at")
+    list_filter = ("plan", "status")
+    search_fields = ("student__student_name", "student__profile__user__username", "student__school_name")
+    actions = ("activate_paid_subscriptions", "return_to_free_plan")
+
+    @admin.action(description="Confirm payment and activate paid subscription")
+    def activate_paid_subscriptions(self, request, queryset):
+        queryset.update(plan=Subscription.Plan.PAID, status=Subscription.Status.ACTIVE, activated_at=timezone.now())
+
+    @admin.action(description="Return selected students to the free plan")
+    def return_to_free_plan(self, request, queryset):
+        queryset.update(plan=Subscription.Plan.FREE, status=Subscription.Status.ACTIVE, activated_at=None)

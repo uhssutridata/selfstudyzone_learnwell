@@ -22,6 +22,8 @@ After parent signup, the parent is sent to Parent space to search students whose
 
 Verified teachers can record exam marks/pass status and homework completion from a student record. Student sessions report active, visible LMS time while a student is signed in. Parents with an approved watchlist link can see exam results, homework status, and recorded time in their dashboard.
 
+Students start on the free subscription. They can request a paid upgrade from their dashboard; an administrator confirms payment and activates the paid plan from **Admin → Subscriptions**. No payment gateway or price is configured in this starter.
+
 ## Git history
 
 This project has its own Git repository in this folder. Save later versions with:
