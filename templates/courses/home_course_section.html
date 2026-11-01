@@ -1,13 +1,6 @@
 <section class="content-section">
   <div class="section-head">
     <div><span class="eyebrow">{{ home_settings.library_eyebrow }}</span><h2>{{ home_settings.library_title }}</h2></div>
-    <form method="get" class="filter">
-      <input type="hidden" name="q" value="{{ query }}">
-      <select name="category" aria-label="Filter by topic" onchange="this.form.submit()">
-        <option value="">{{ home_settings.all_topics_label }}</option>
-        {% for item in categories %}<option value="{{ item }}" {% if selected_category == item %}selected{% endif %}>{{ item }}</option>{% endfor %}
-      </select>
-    </form>
   </div>
   <div class="course-grid">
     {% for course in courses %}
