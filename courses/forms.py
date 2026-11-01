@@ -289,6 +289,27 @@ class HomeworkSubmissionForm(forms.ModelForm):
         widgets = {"notes": forms.Textarea(attrs={"rows": 3})}
 
 
+class LessonHomeworkForm(forms.ModelForm):
+    class Meta:
+        model = HomeworkSubmission
+        fields = ("notes", "attachment")
+        labels = {"notes": "Notes for your teacher", "attachment": "Upload your homework file"}
+        widgets = {"notes": forms.Textarea(attrs={"rows": 3})}
+
+
+class LessonQuizForm(forms.Form):
+    def __init__(self, *args, questions, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.questions = questions
+        for question in questions:
+            self.fields[f"question_{question.pk}"] = forms.ChoiceField(
+                label=question.prompt,
+                choices=[(key, getattr(question, f"option_{key}")) for key in "abcd"],
+                widget=forms.RadioSelect,
+                required=True,
+            )
+
+
 class HomeworkEvaluationForm(forms.ModelForm):
     class Meta:
         model = HomeworkSubmission

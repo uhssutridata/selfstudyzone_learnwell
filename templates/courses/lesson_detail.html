@@ -1,1 +1,37 @@
-{% extends 'base.html' %}{% block title %}{{ lesson.title }} — Learnwell{% endblock %}{% block content %}<section class="lesson-page"><a class="back-link" href="{% url 'dashboard' %}">← My learning</a><span class="eyebrow">{{ course.title }} · LESSON {{ lesson.position }}</span><h1>{{ lesson.title }}</h1><p class="muted">{{ lesson.duration_minutes }} minute lesson</p><article class="lesson-content prose">{{ lesson.content|linebreaks }}</article>{% if completed %}<div class="complete-banner">✓ Lesson complete. Keep going!</div>{% else %}<form method="post" action="{% url 'complete-lesson' course.slug lesson.id %}">{% csrf_token %}<button class="button">Mark lesson complete →</button></form>{% endif %}</section>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}{{ lesson.title }} — Learnwell{% endblock %}
+{% block content %}
+<section class="lesson-page">
+  <a class="back-link" href="{% url 'dashboard' %}">← My learning</a>
+  <span class="eyebrow">{{ course.title }} · LESSON {{ lesson.position }}</span>
+  <h1>{{ lesson.title }}</h1>
+  <p class="muted">{{ lesson.duration_minutes }} minute lesson</p>
+  <article class="lesson-content prose">{{ lesson.content|linebreaks }}</article>
+
+  {% if lesson.content_type == 'video' and lesson.youtube_embed_url %}
+    <div class="lesson-video"><iframe src="{{ lesson.youtube_embed_url }}" title="{{ lesson.title }} video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+  {% endif %}
+  {% if lesson.content_type == 'animated' and lesson.animation_file %}
+    <figure class="lesson-animation"><img src="{{ lesson.animation_file.url }}" alt="Animation for {{ lesson.title }}"></figure>
+  {% endif %}
+
+  {% if quiz_form %}<section class="lesson-quiz"><span class="eyebrow">CHECK YOUR UNDERSTANDING</span><h2>Lesson quiz</h2>
+    {% if latest_attempt %}<p class="quiz-score">Latest score: <strong>{{ latest_attempt.score }} / {{ latest_attempt.total_questions }}</strong></p>{% endif %}
+    <form method="post" class="lesson-quiz-form">{% csrf_token %}
+      {% for field in quiz_form %}<fieldset class="quiz-question"><legend>{{ forloop.counter }}. {{ field.label }}</legend>{% for radio in field %}<label class="quiz-option">{{ radio.tag }} <span>{{ radio.choice_label }}</span></label>{% endfor %}{{ field.errors }}</fieldset>{% endfor %}
+      <button class="button" type="submit">Submit answers →</button>
+    </form>
+    {% if quiz_results %}<div class="quiz-feedback"><h3>Your latest answers</h3>{% for result in quiz_results %}<p class="{% if result.correct %}quiz-correct{% else %}quiz-incorrect{% endif %}"><strong>{% if result.correct %}Correct{% else %}Review this one{% endif %}:</strong> {{ result.question.prompt }}{% if not result.correct %}<br>Correct option: {{ result.question.correct_option|upper }}{% endif %}{% if result.question.explanation %}<br>{{ result.question.explanation }}{% endif %}</p>{% endfor %}</div>{% endif %}
+  </section>{% endif %}
+
+  {% if lesson.homework_description %}<section class="lesson-homework"><span class="eyebrow">HOMEWORK</span><h2>Put it into practice</h2><div class="prose">{{ lesson.homework_description|linebreaks }}</div>
+    <form method="post" enctype="multipart/form-data" action="{% url 'submit-lesson-homework' course.slug lesson.id %}" class="lesson-homework-form">{% csrf_token %}
+      {% for field in homework_form %}<div class="password-field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{{ field.errors }}</div>{% endfor %}
+      <button class="button" type="submit">Upload homework →</button>
+    </form>
+    {% for submission in homework_submissions %}<article class="homework-submission-card"><strong>Uploaded {{ submission.submitted_at|date:"M j, Y, g:i a" }}</strong> · <a href="{{ submission.attachment.url }}" target="_blank" rel="noopener">View your file</a><p>{% if submission.evaluated_at %}Teacher feedback: {{ submission.teacher_feedback|default:"Reviewed" }}{% else %}Waiting for your authorized teacher to review.{% endif %}</p></article>{% endfor %}
+  </section>{% endif %}
+
+  {% if completed %}<div class="complete-banner">✓ Lesson complete. Keep going!</div>{% else %}<form method="post" action="{% url 'complete-lesson' course.slug lesson.id %}">{% csrf_token %}<button class="button">Mark lesson complete →</button></form>{% endif %}
+</section>
+{% endblock %}

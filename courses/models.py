@@ -1,6 +1,8 @@
 from django.conf import settings
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.urls import reverse
+from urllib.parse import parse_qs, urlparse
 
 class HomePageSettings(models.Model):
     class Layout(models.TextChoices):
@@ -255,6 +257,7 @@ class HomeworkStatus(models.Model):
 
 class HomeworkSubmission(models.Model):
     student = models.ForeignKey(StudentDetails, on_delete=models.CASCADE, related_name="homework_submissions")
+    lesson = models.ForeignKey("Lesson", on_delete=models.SET_NULL, null=True, blank=True, related_name="homework_submissions")
     title = models.CharField(max_length=180)
     notes = models.TextField(blank=True)
     attachment = models.FileField(upload_to="homework_submissions/%Y/%m/")
@@ -322,9 +325,18 @@ class Course(models.Model):
         return self.enrollments.count()
 
 class Lesson(models.Model):
+    class ContentType(models.TextChoices):
+        TEXT = "text", "Text lesson"
+        ANIMATED = "animated", "Animated SVG lesson"
+        VIDEO = "video", "YouTube video lesson"
+
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="lessons")
     title = models.CharField(max_length=180)
     content = models.TextField(help_text="Lesson notes. You can include links to video or resources.")
+    content_type = models.CharField(max_length=12, choices=ContentType.choices, default=ContentType.TEXT)
+    youtube_url = models.URLField(blank=True, help_text="YouTube video URL; it will be embedded in the lesson page.")
+    animation_file = models.FileField(upload_to="lesson_animations/", blank=True, validators=[FileExtensionValidator(["svg"])], help_text="Upload an animated SVG illustration for this lesson.")
+    homework_description = models.TextField(blank=True, help_text="Instructions for the homework students submit after this lesson.")
     position = models.PositiveIntegerField(default=1)
     duration_minutes = models.PositiveIntegerField(default=10)
 
@@ -334,6 +346,63 @@ class Lesson(models.Model):
 
     def __str__(self):
         return f"{self.course.title}: {self.title}"
+
+    @property
+    def youtube_embed_url(self):
+        if not self.youtube_url:
+            return ""
+        parsed = urlparse(self.youtube_url)
+        host = (parsed.hostname or "").lower()
+        video_id = ""
+        if host in {"youtu.be", "www.youtu.be"}:
+            video_id = parsed.path.strip("/").split("/")[0]
+        elif host in {"youtube.com", "www.youtube.com", "m.youtube.com"}:
+            if parsed.path == "/watch":
+                video_id = parse_qs(parsed.query).get("v", [""])[0]
+            elif parsed.path.startswith(("/embed/", "/shorts/")):
+                video_id = parsed.path.split("/")[2]
+        if video_id and video_id.replace("-", "").replace("_", "").isalnum():
+            return f"https://www.youtube-nocookie.com/embed/{video_id}"
+        return ""
+
+
+class LessonQuestion(models.Model):
+    class Option(models.TextChoices):
+        A = "a", "Option A"
+        B = "b", "Option B"
+        C = "c", "Option C"
+        D = "d", "Option D"
+
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="questions")
+    prompt = models.CharField(max_length=500)
+    option_a = models.CharField(max_length=250)
+    option_b = models.CharField(max_length=250)
+    option_c = models.CharField(max_length=250)
+    option_d = models.CharField(max_length=250)
+    correct_option = models.CharField(max_length=1, choices=Option.choices)
+    explanation = models.TextField(blank=True)
+    position = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        ordering = ["position", "id"]
+
+    def __str__(self):
+        return f"{self.lesson.title}: {self.prompt[:70]}"
+
+
+class LessonQuizAttempt(models.Model):
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="lesson_quiz_attempts")
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name="quiz_attempts")
+    score = models.PositiveIntegerField(default=0)
+    total_questions = models.PositiveIntegerField(default=0)
+    answers = models.JSONField(default=dict, blank=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-submitted_at"]
+
+    def __str__(self):
+        return f"{self.student.username}: {self.score}/{self.total_questions} — {self.lesson.title}"
 
 class Enrollment(models.Model):
     student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="enrollments")

@@ -12,8 +12,8 @@ import secrets
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import ListView, DetailView
 from django.utils import timezone
-from .forms import ExamResultForm, HomeworkEvaluationForm, HomeworkSubmissionForm, HomeworkStatusForm, ParentProfileForm, ParentRegistrationForm, RoleAuthenticationForm, StudentProfileForm, StudentRegistrationForm, StudentSearchForm, TeacherAssistedStudentForm, TeacherProfileForm, TeacherRegistrationForm
-from .models import Course, Enrollment, HomePageFeedback, HomePageNotice, HomePagePerformanceHighlight, HomeworkSubmission, Lesson, LessonProgress, ParentDetails, ParentWatchlist, StudyTime, StudentDetails, Subscription, TeacherDetails, TeacherStudentApproval, UserProfile
+from .forms import ExamResultForm, HomeworkEvaluationForm, HomeworkSubmissionForm, HomeworkStatusForm, LessonHomeworkForm, LessonQuizForm, ParentProfileForm, ParentRegistrationForm, RoleAuthenticationForm, StudentProfileForm, StudentRegistrationForm, StudentSearchForm, TeacherAssistedStudentForm, TeacherProfileForm, TeacherRegistrationForm
+from .models import Course, Enrollment, HomePageFeedback, HomePageNotice, HomePagePerformanceHighlight, HomeworkSubmission, Lesson, LessonProgress, LessonQuizAttempt, ParentDetails, ParentWatchlist, StudyTime, StudentDetails, Subscription, TeacherDetails, TeacherStudentApproval, UserProfile
 
 
 class RoleLoginView(LoginView):
@@ -187,7 +187,46 @@ def lesson_detail(request, slug, lesson_id):
     enrollment = get_object_or_404(Enrollment, student=request.user, course__slug=slug, course__published=True)
     lesson = get_object_or_404(Lesson, id=lesson_id, course=enrollment.course)
     completed = enrollment.progress.filter(lesson=lesson).exists()
-    return render(request, "courses/lesson_detail.html", {"course": enrollment.course, "lesson": lesson, "completed": completed})
+    questions = list(lesson.questions.all())
+    quiz_form = LessonQuizForm(request.POST if request.method == "POST" else None, questions=questions) if questions else None
+    if request.method == "POST" and quiz_form and quiz_form.is_valid():
+        answers = {str(question.pk): quiz_form.cleaned_data[f"question_{question.pk}"] for question in questions}
+        score = sum(answers[str(question.pk)] == question.correct_option for question in questions)
+        LessonQuizAttempt.objects.create(student=request.user, lesson=lesson, score=score, total_questions=len(questions), answers=answers)
+        messages.success(request, f"Quiz submitted: {score} out of {len(questions)} correct.")
+        return redirect("lesson-detail", slug=slug, lesson_id=lesson.id)
+    latest_attempt = LessonQuizAttempt.objects.filter(student=request.user, lesson=lesson).first()
+    quiz_results = []
+    if latest_attempt:
+        for question in questions:
+            answer = latest_attempt.answers.get(str(question.pk), "")
+            quiz_results.append({"question": question, "answer": answer, "correct": answer == question.correct_option})
+    homework_form = LessonHomeworkForm()
+    submissions = HomeworkSubmission.objects.filter(student__profile__user=request.user, lesson=lesson)
+    return render(request, "courses/lesson_detail.html", {"course": enrollment.course, "lesson": lesson, "completed": completed, "quiz_form": quiz_form, "quiz_results": quiz_results, "latest_attempt": latest_attempt, "homework_form": homework_form, "homework_submissions": submissions})
+
+
+@login_required
+@require_POST
+def submit_lesson_homework(request, slug, lesson_id):
+    if not _has_role(request, UserProfile.Role.STUDENT):
+        return HttpResponseForbidden("Student accounts only.")
+    enrollment = get_object_or_404(Enrollment, student=request.user, course__slug=slug, course__published=True)
+    lesson = get_object_or_404(Lesson, id=lesson_id, course=enrollment.course)
+    if not lesson.homework_description.strip():
+        messages.error(request, "This lesson does not have homework assigned.")
+        return redirect("lesson-detail", slug=slug, lesson_id=lesson_id)
+    form = LessonHomeworkForm(request.POST, request.FILES)
+    if form.is_valid():
+        submission = form.save(commit=False)
+        submission.student = get_object_or_404(StudentDetails, profile__user=request.user)
+        submission.lesson = lesson
+        submission.title = f"{lesson.title} — Homework"
+        submission.save()
+        messages.success(request, "Homework uploaded for review by your authorized teacher.")
+    else:
+        messages.error(request, "Please choose a homework file and try again.")
+    return redirect("lesson-detail", slug=slug, lesson_id=lesson_id)
 
 @login_required
 def complete_lesson(request, slug, lesson_id):

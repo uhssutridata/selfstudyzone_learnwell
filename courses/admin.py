@@ -1,6 +1,6 @@
 from django.contrib import admin, messages
 from django.utils import timezone
-from .models import Course, Enrollment, ExamResult, HomePageFeedback, HomePageNotice, HomePagePerformanceHighlight, HomePageSettings, HomeworkStatus, HomeworkSubmission, Lesson, LessonProgress, ParentChild, ParentDetails, ParentWatchlist, StudentDetails, StudyTime, Subscription, TeacherDetails, TeacherStudentApproval, UserProfile
+from .models import Course, Enrollment, ExamResult, HomePageFeedback, HomePageNotice, HomePagePerformanceHighlight, HomePageSettings, HomeworkStatus, HomeworkSubmission, Lesson, LessonProgress, LessonQuestion, LessonQuizAttempt, ParentChild, ParentDetails, ParentWatchlist, StudentDetails, StudyTime, Subscription, TeacherDetails, TeacherStudentApproval, UserProfile
 
 
 @admin.register(HomePageSettings)
@@ -58,6 +58,28 @@ class HomePageFeedbackAdmin(admin.ModelAdmin):
 class LessonInline(admin.TabularInline):
     model = Lesson
     extra = 1
+    fields = ("title", "content_type", "content", "youtube_url", "animation_file", "homework_description", "position", "duration_minutes")
+
+
+class LessonQuestionInline(admin.TabularInline):
+    model = LessonQuestion
+    extra = 1
+
+
+@admin.register(Lesson)
+class LessonAdmin(admin.ModelAdmin):
+    list_display = ("title", "course", "content_type", "position")
+    list_filter = ("content_type", "course")
+    search_fields = ("title", "course__title", "content")
+    inlines = [LessonQuestionInline]
+
+
+@admin.register(LessonQuizAttempt)
+class LessonQuizAttemptAdmin(admin.ModelAdmin):
+    list_display = ("student", "lesson", "score", "total_questions", "submitted_at")
+    list_filter = ("lesson__course", "submitted_at")
+    search_fields = ("student__username", "lesson__title")
+    readonly_fields = ("student", "lesson", "score", "total_questions", "answers", "submitted_at")
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
