@@ -1,0 +1,21 @@
+<section class="content-section">
+  <div class="section-head">
+    <div><span class="eyebrow">{{ home_settings.library_eyebrow }}</span><h2>{{ home_settings.library_title }}</h2></div>
+    <form method="get" class="filter">
+      <input type="hidden" name="q" value="{{ query }}">
+      <select name="category" aria-label="Filter by topic" onchange="this.form.submit()">
+        <option value="">{{ home_settings.all_topics_label }}</option>
+        {% for item in categories %}<option value="{{ item }}" {% if selected_category == item %}selected{% endif %}>{{ item }}</option>{% endfor %}
+      </select>
+    </form>
+  </div>
+  <div class="course-grid">
+    {% for course in courses %}
+      <article class="course-card">
+        <a class="course-cover cover-{{ forloop.counter0|add:1|divisibleby:4|yesno:'4,1' }}" href="{{ course.get_absolute_url }}"><span class="cover-label">{{ course.category }}</span><span class="cover-shape">✳</span></a>
+        <div class="course-info"><div class="meta"><span>{{ course.level }}</span><span>{{ course.lessons.count }} {{ home_settings.lesson_label }}</span></div><h3><a href="{{ course.get_absolute_url }}">{{ course.title }}</a></h3><p>{{ course.subtitle|default:course.description|truncatechars:100 }}</p><div class="teacher"><span class="avatar">{{ course.instructor.username|first|upper }}</span><span>{{ course.instructor.get_full_name|default:course.instructor.username }}</span><span class="arrow">↗</span></div></div>
+      </article>
+    {% empty %}<div class="empty-state"><span>✳</span><h3>{{ home_settings.empty_title }}</h3><p>{{ home_settings.empty_text }}</p></div>{% endfor %}
+  </div>
+  {% if is_paginated %}<div class="pagination">{% if page_obj.has_previous %}<a href="?q={{ query }}&category={{ selected_category }}&page={{ page_obj.previous_page_number }}">← {{ home_settings.previous_page_label }}</a>{% endif %}<span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>{% if page_obj.has_next %}<a href="?q={{ query }}&category={{ selected_category }}&page={{ page_obj.next_page_number }}">{{ home_settings.next_page_label }} →</a>{% endif %}</div>{% endif %}
+</section>

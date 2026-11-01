@@ -1,6 +1,25 @@
 from django.contrib import admin, messages
 from django.utils import timezone
-from .models import Course, Enrollment, ExamResult, HomeworkStatus, Lesson, LessonProgress, ParentChild, ParentDetails, ParentWatchlist, StudentDetails, StudyTime, Subscription, TeacherDetails, UserProfile
+from .models import Course, Enrollment, ExamResult, HomePageSettings, HomeworkStatus, Lesson, LessonProgress, ParentChild, ParentDetails, ParentWatchlist, StudentDetails, StudyTime, Subscription, TeacherDetails, UserProfile
+
+
+@admin.register(HomePageSettings)
+class HomePageSettingsAdmin(admin.ModelAdmin):
+    fieldsets = (
+        ("Layout", {"fields": ("layout", "section_order")}),
+        ("Branding", {"fields": ("brand_name", "brand_tagline", "footer_text")}),
+        ("Navigation labels", {"fields": ("nav_explore", "nav_learning", "nav_teaching", "nav_parent", "nav_profile", "nav_students", "nav_admin", "nav_login", "nav_signup", "nav_logout")}),
+        ("Welcome section", {"fields": ("hero_eyebrow", "hero_title", "hero_highlight", "hero_description", "search_placeholder", "search_button")}),
+        ("Illustration", {"fields": ("illustration_text", "illustration_caption")}),
+        ("Course library", {"fields": ("library_eyebrow", "library_title", "all_topics_label", "lesson_label", "previous_page_label", "next_page_label", "empty_title", "empty_text")}),
+    )
+    readonly_fields = ()
+
+    def has_add_permission(self, request):
+        return not HomePageSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 class LessonInline(admin.TabularInline):
     model = Lesson

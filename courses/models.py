@@ -2,6 +2,62 @@ from django.conf import settings
 from django.db import models
 from django.urls import reverse
 
+class HomePageSettings(models.Model):
+    class Layout(models.TextChoices):
+        SPLIT = "split", "Split hero (text beside illustration)"
+        CENTERED = "centered", "Centered hero"
+        ART_LEFT = "art_left", "Illustration on the left"
+        TEXT_ONLY = "text_only", "Text only (hide illustration)"
+
+    class SectionOrder(models.TextChoices):
+        HERO_FIRST = "hero_first", "Welcome section before courses"
+        COURSES_FIRST = "courses_first", "Courses before welcome section"
+
+    id = models.PositiveSmallIntegerField(primary_key=True, default=1, editable=False)
+    layout = models.CharField(max_length=16, choices=Layout.choices, default=Layout.SPLIT)
+    section_order = models.CharField(max_length=16, choices=SectionOrder.choices, default=SectionOrder.HERO_FIRST)
+    brand_name = models.CharField(max_length=80, default="learnwell")
+    brand_tagline = models.CharField(max_length=100, default="selfstudyzone")
+    footer_text = models.CharField(max_length=180, default="Make room for what’s next.")
+    nav_explore = models.CharField(max_length=50, default="Explore")
+    nav_learning = models.CharField(max_length=50, default="My learning")
+    nav_teaching = models.CharField(max_length=50, default="Teaching")
+    nav_parent = models.CharField(max_length=50, default="Parent space")
+    nav_profile = models.CharField(max_length=50, default="Profile")
+    nav_students = models.CharField(max_length=50, default="Students")
+    nav_admin = models.CharField(max_length=50, default="Admin")
+    nav_login = models.CharField(max_length=50, default="Log in")
+    nav_signup = models.CharField(max_length=50, default="Get started")
+    nav_logout = models.CharField(max_length=50, default="Log out")
+    hero_eyebrow = models.CharField(max_length=100, default="YOUR NEXT CHAPTER STARTS HERE")
+    hero_title = models.CharField(max_length=120, default="Learn something")
+    hero_highlight = models.CharField(max_length=120, default="that moves you.")
+    hero_description = models.CharField(max_length=300, default="Expert-led courses to help you build useful skills, one lesson at a time.")
+    search_placeholder = models.CharField(max_length=120, default="What would you like to learn?")
+    search_button = models.CharField(max_length=60, default="Find a course")
+    illustration_text = models.CharField(max_length=100, default="MAKE IT HAPPEN")
+    illustration_caption = models.CharField(max_length=120, default="Small steps. Big ideas.")
+    library_eyebrow = models.CharField(max_length=100, default="THE COURSE LIBRARY")
+    library_title = models.CharField(max_length=140, default="Find your kind of learning")
+    all_topics_label = models.CharField(max_length=80, default="All topics")
+    lesson_label = models.CharField(max_length=40, default="lessons")
+    previous_page_label = models.CharField(max_length=40, default="Previous")
+    next_page_label = models.CharField(max_length=40, default="Next")
+    empty_title = models.CharField(max_length=160, default="Your next favorite course is on its way.")
+    empty_text = models.CharField(max_length=240, default="Try a different search, or check back soon.")
+
+    class Meta:
+        verbose_name = "Home page settings"
+        verbose_name_plural = "Home page settings"
+
+    def __str__(self):
+        return "Home page settings"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+
 class UserProfile(models.Model):
     class Role(models.TextChoices):
         STUDENT = "student", "Student"

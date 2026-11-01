@@ -10,3 +10,4 @@
 @media(max-width:760px){.home-page .mobile-menu-toggle,.home-page .site-nav{display:none!important}}
 .brand-tagline{font-size:13px}.topbar .brand-tagline{font-size:12px}@media(max-width:480px){.brand-tagline{font-size:11px}.topbar .brand-tagline{font-size:10px}}
 .topbar .brand-tagline{font-size:22px}footer .brand-tagline{font-size:18px}@media(max-width:480px){.topbar .brand-tagline{font-size:18px}footer .brand-tagline{font-size:17px}}
+.hero-centered{grid-template-columns:1fr;text-align:center}.hero-centered .hero-copy>p{margin-left:auto;margin-right:auto}.hero-centered .search{margin-left:auto;margin-right:auto}.hero-centered .hero-art{width:min(100%,600px);margin:0 auto}.hero-art-left{grid-template-columns:.85fr 1fr}.hero-art-left .hero-art{grid-column:1;grid-row:1}.hero-art-left .hero-copy{grid-column:2;grid-row:1}.hero-text-only{grid-template-columns:1fr}.hero-text-only .hero-copy>p{max-width:560px}

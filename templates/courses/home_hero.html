@@ -1,0 +1,18 @@
+<section class="hero hero-{{ home_settings.layout }}">
+  <div class="hero-copy">
+    <span class="eyebrow">{{ home_settings.hero_eyebrow }}</span>
+    <h1>{{ home_settings.hero_title }}<br><em>{{ home_settings.hero_highlight }}</em></h1>
+    <p>{{ home_settings.hero_description }}</p>
+    <form class="search" method="get">
+      <input name="q" value="{{ query }}" placeholder="{{ home_settings.search_placeholder }}" aria-label="{{ home_settings.search_placeholder }}">
+      <button class="button">{{ home_settings.search_button }} <span>→</span></button>
+    </form>
+  </div>
+  {% if home_settings.layout != 'text_only' %}
+  <div class="hero-art">
+    <div class="sun"></div><div class="art-card card-back"></div>
+    <div class="art-card card-front"><span class="art-spark">✳</span><span>{{ home_settings.illustration_text|linebreaksbr }}</span></div>
+    <div class="art-caption">{{ home_settings.illustration_caption }}</div>
+  </div>
+  {% endif %}
+</section>
