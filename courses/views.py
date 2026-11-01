@@ -62,9 +62,10 @@ class CourseListView(ListView):
 
     def get_queryset(self):
         qs = Course.objects.filter(published=True).select_related("instructor")
-        if self.request.user.is_authenticated and UserProfile.objects.filter(user=self.request.user, role=UserProfile.Role.STUDENT).exists():
-            class_key = _student_class_key(self.request.user)
-            qs = qs.filter(class_name=class_key) if class_key else qs.none()
+        if not self.request.user.is_authenticated or not UserProfile.objects.filter(user=self.request.user, role=UserProfile.Role.STUDENT).exists():
+            return qs.none()
+        class_key = _student_class_key(self.request.user)
+        qs = qs.filter(class_name=class_key) if class_key else qs.none()
         query = self.request.GET.get("q", "").strip()
         category = self.request.GET.get("category", "").strip()
         if query:
@@ -76,8 +77,13 @@ class CourseListView(ListView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["query"] = self.request.GET.get("q", "")
-        ctx["categories"] = Course.objects.filter(published=True).values_list("category", flat=True).distinct()
+        ctx["categories"] = self.get_queryset().values_list("category", flat=True).distinct()
         ctx["selected_category"] = self.request.GET.get("category", "")
+        ctx["student_course_access"] = bool(
+            self.request.user.is_authenticated
+            and UserProfile.objects.filter(user=self.request.user, role=UserProfile.Role.STUDENT).exists()
+            and _student_class_key(self.request.user)
+        )
         ctx["home_notices"] = HomePageNotice.objects.filter(is_active=True)[:4]
         ctx["performance_highlights"] = HomePagePerformanceHighlight.objects.filter(is_published=True)[:3]
         published_feedback = HomePageFeedback.objects.filter(is_published=True)
@@ -100,10 +106,10 @@ class CourseDetailView(DetailView):
 
     def get_queryset(self):
         queryset = Course.objects.filter(published=True).select_related("instructor").prefetch_related("lessons")
-        if self.request.user.is_authenticated and UserProfile.objects.filter(user=self.request.user, role=UserProfile.Role.STUDENT).exists():
-            class_key = _student_class_key(self.request.user)
-            queryset = queryset.filter(class_name=class_key) if class_key else queryset.none()
-        return queryset
+        if not self.request.user.is_authenticated or not UserProfile.objects.filter(user=self.request.user, role=UserProfile.Role.STUDENT).exists():
+            return queryset.none()
+        class_key = _student_class_key(self.request.user)
+        return queryset.filter(class_name=class_key) if class_key else queryset.none()
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
