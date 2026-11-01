@@ -109,6 +109,7 @@ class HomePageFeedback(models.Model):
     quote = models.TextField(max_length=600)
     display_name = models.CharField(max_length=100)
     role = models.CharField(max_length=12, choices=Role.choices)
+    profile_picture = models.ImageField(upload_to="homepage_feedback/", blank=True, null=True)
     is_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 

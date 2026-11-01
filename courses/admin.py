@@ -51,6 +51,9 @@ class HomePageFeedbackAdmin(admin.ModelAdmin):
     list_filter = ("role", "is_published", "created_at")
     search_fields = ("display_name", "quote")
     list_editable = ("is_published",)
+    fieldsets = (
+        ("Feedback shown on the homepage", {"fields": ("quote", "display_name", "role", "profile_picture", "is_published")}),
+    )
 
 class LessonInline(admin.TabularInline):
     model = Lesson

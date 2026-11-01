@@ -56,7 +56,15 @@ class CourseListView(ListView):
         ctx["selected_category"] = self.request.GET.get("category", "")
         ctx["home_notices"] = HomePageNotice.objects.filter(is_active=True)[:4]
         ctx["performance_highlights"] = HomePagePerformanceHighlight.objects.filter(is_published=True)[:3]
-        ctx["home_feedback"] = HomePageFeedback.objects.filter(is_published=True)[:6]
+        published_feedback = HomePageFeedback.objects.filter(is_published=True)
+        ctx["home_feedback_slots"] = [
+            {
+                "role": role,
+                "role_label": label,
+                "feedback": published_feedback.filter(role=role).first(),
+            }
+            for role, label in UserProfile.Role.choices
+        ]
         return ctx
 
 class CourseDetailView(DetailView):

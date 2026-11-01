@@ -50,3 +50,10 @@
 .home-page .course-info .meta,.home-page .course-info .teacher{font-size:12px}
 @media(max-width:760px){.home-page .hero h1{font-size:52px}.home-page .hero-copy>p{font-size:16px}.home-page .section-head h2{font-size:28px}}
 @media(max-width:480px){.home-page .hero h1{font-size:46px}.home-page .hero-copy>p{font-size:15px}.home-page .course-info h3{font-size:19px}}
+.hero-content-cards .home-card-heading{position:relative}
+.home-card-illustration{flex:0 0 62px;width:62px;height:44px;margin-left:auto;overflow:visible}
+.notice-illustration{color:#68815c}
+.performance-illustration{color:#d0a276}
+.feedback-illustration{color:#9b8194}
+@media(max-width:480px){.home-card-illustration{flex-basis:50px;width:50px;height:38px}}
+.feedback-avatar-image{display:block;flex:0 0 32px;width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid #e9eee1}

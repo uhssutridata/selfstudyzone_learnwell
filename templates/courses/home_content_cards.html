@@ -1,6 +1,6 @@
 <div class="home-content-cards hero-content-cards">
     <article class="home-content-card home-notice-card">
-      <div class="home-card-heading"><span class="home-card-icon" aria-hidden="true">✳</span><div><span class="eyebrow">{{ home_settings.notice_eyebrow }}</span><h2>{{ home_settings.notice_title }}</h2></div></div>
+      <div class="home-card-heading"><span class="home-card-icon" aria-hidden="true">✳</span><div><span class="eyebrow">{{ home_settings.notice_eyebrow }}</span><h2>{{ home_settings.notice_title }}</h2></div><svg class="home-card-illustration notice-illustration" viewBox="0 0 88 58" aria-hidden="true"><path d="M18 37h45l8 8H10z" fill="currentColor" opacity=".13"/><path d="M25 32c0-11 7-19 18-19s18 8 18 19v8H25z" fill="currentColor" opacity=".22"/><path d="M18 37h45l8 8H10zM32 47a11 11 0 0 0 21 0M43 6v5M15 14l5 4M71 14l-5 4" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="68" cy="40" r="4" fill="#d6a56d"/></svg></div>
       <div class="home-card-body">
         {% for notice in home_notices %}
           {% if forloop.first %}<div class="featured-notice"><time datetime="{{ notice.published_at|date:'c' }}">{{ notice.published_at|date:"M j, Y" }}</time><h3>{{ notice.title }}</h3><p>{{ notice.message|linebreaksbr }}</p></div>{% endif %}
@@ -9,7 +9,7 @@
     </article>
 
     <article class="home-content-card home-performance-card">
-      <div class="home-card-heading"><span class="home-card-icon" aria-hidden="true">↗</span><div><span class="eyebrow">{{ home_settings.performance_eyebrow }}</span><h2>{{ home_settings.performance_title }}</h2></div></div>
+      <div class="home-card-heading"><span class="home-card-icon" aria-hidden="true">↗</span><div><span class="eyebrow">{{ home_settings.performance_eyebrow }}</span><h2>{{ home_settings.performance_title }}</h2></div><svg class="home-card-illustration performance-illustration" viewBox="0 0 88 58" aria-hidden="true"><path d="M10 47h68" fill="none" stroke="currentColor" stroke-width="2" opacity=".25"/><rect x="16" y="31" width="12" height="16" rx="3" fill="currentColor" opacity=".35"/><rect x="37" y="22" width="12" height="25" rx="3" fill="currentColor" opacity=".55"/><rect x="58" y="10" width="12" height="37" rx="3" fill="currentColor" opacity=".8"/><path d="m16 25 18-9 15 3L70 7" fill="none" stroke="#526f52" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M63 7h7v7" fill="none" stroke="#526f52" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="16" cy="25" r="3" fill="#d6a56d"/></svg></div>
       <div class="home-card-body">
         {% for highlight in performance_highlights %}
           {% if forloop.first %}<div class="featured-performance"><span class="performance-kicker">{{ highlight.class_label|default:"LEARNER SPOTLIGHT" }}</span><h3>{{ highlight.title }}</h3><p>{{ highlight.description }}</p><div class="featured-performance-foot"><span>{{ highlight.student_display_name|default:"A Learnwell learner" }}</span>{% if highlight.metric_value %}<strong><small>{{ highlight.metric_label }}</small>{{ highlight.metric_value }}</strong>{% endif %}</div></div>{% endif %}
@@ -18,10 +18,12 @@
     </article>
 
     <article class="home-content-card home-feedback-card">
-      <div class="home-card-heading"><span class="home-card-icon" aria-hidden="true">“</span><div><span class="eyebrow">{{ home_settings.feedback_eyebrow }}</span><h2>{{ home_settings.feedback_title }}</h2></div></div>
-      <div class="home-card-body">
-        {% for feedback in home_feedback|slice:":2" %}<div class="featured-feedback"><blockquote>“{{ feedback.quote }}”</blockquote><div class="featured-feedback-author"><span class="feedback-avatar">{{ feedback.display_name|first|upper }}</span><span><strong>{{ feedback.display_name }}</strong><small>{{ feedback.get_role_display }}</small></span></div></div>
-        {% empty %}<div class="home-card-empty"><strong>Many voices, one community</strong><p>{{ home_settings.feedback_empty_text }}</p></div>{% endfor %}
+      <div class="home-card-heading"><span class="home-card-icon" aria-hidden="true">“</span><div><span class="eyebrow">{{ home_settings.feedback_eyebrow }}</span><h2>{{ home_settings.feedback_title }}</h2></div><svg class="home-card-illustration feedback-illustration" viewBox="0 0 88 58" aria-hidden="true"><path d="M11 13a7 7 0 0 1 7-7h30a7 7 0 0 1 7 7v17a7 7 0 0 1-7 7H31l-11 9v-9h-2a7 7 0 0 1-7-7z" fill="currentColor" opacity=".2"/><path d="M34 28a7 7 0 0 1 7-7h29a7 7 0 0 1 7 7v14a7 7 0 0 1-7 7H56l-9 7v-7h-6a7 7 0 0 1-7-7z" fill="currentColor" opacity=".42"/><path d="M21 18h23M21 25h16M44 33h18M44 39h12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="70" cy="13" r="4" fill="#d6a56d"/></svg></div>
+      <div class="home-card-body home-feedback-body">
+        {% for slot in home_feedback_slots %}<div class="featured-feedback">
+          {% if slot.feedback %}<blockquote>“{{ slot.feedback.quote }}”</blockquote><div class="featured-feedback-author">{% if slot.feedback.profile_picture %}<img class="feedback-avatar-image" src="{{ slot.feedback.profile_picture.url }}" alt="{{ slot.feedback.display_name }}">{% else %}<span class="feedback-avatar">{{ slot.feedback.display_name|first|upper }}</span>{% endif %}<span><strong>{{ slot.feedback.display_name }}</strong><small>{{ slot.role_label }}</small></span></div>
+          {% else %}<blockquote class="feedback-placeholder">{{ slot.role_label }} feedback will appear here soon.</blockquote><div class="featured-feedback-author"><span class="feedback-avatar">{{ slot.role_label|first }}</span><span><strong>{{ slot.role_label }} voice</strong><small>{{ slot.role_label }}</small></span></div>{% endif %}
+        </div>{% endfor %}
       </div>
     </article>
 </div>
