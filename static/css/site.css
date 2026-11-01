@@ -57,9 +57,9 @@
 .feedback-illustration{color:#9b8194}
 @media(max-width:480px){.home-card-illustration{flex-basis:50px;width:50px;height:38px}}
 .feedback-avatar-image{display:block;flex:0 0 32px;width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid #e9eee1}
-.hero-eyebrow-row{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:510px;min-height:54px}
+.hero-eyebrow-row{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:510px;min-height:76px}
 .hero-eyebrow-row>.eyebrow{flex:1}
-.math-hero-svg{flex:0 0 126px;width:126px;height:62px;overflow:visible;color:#64815a}
+.math-hero-svg{flex:0 0 164px;width:164px;height:80px;overflow:visible;color:#64815a}
 .math-orbit-ring{fill:none;stroke:#9caf8b;stroke-width:1.3;stroke-dasharray:3 4;transform-origin:70px 34px;animation:math-ring-pulse 3.8s ease-in-out infinite}
 .math-center{fill:#e8eedf;stroke:#8da47c;stroke-width:1.5}
 .math-center-symbol{fill:#45654c;font:italic 17px Georgia,serif}
@@ -69,7 +69,7 @@
 @keyframes math-orbit{to{transform:rotate(360deg)}}
 @keyframes math-ring-pulse{0%,100%{opacity:.45}50%{opacity:1}}
 @keyframes math-float{0%,100%{transform:translateY(0);opacity:.7}50%{transform:translateY(-4px);opacity:1}}
-@media(max-width:480px){.hero-eyebrow-row{gap:4px}.math-hero-svg{flex-basis:104px;width:104px;height:54px}}
+@media(max-width:480px){.hero-eyebrow-row{gap:4px;min-height:64px}.math-hero-svg{flex-basis:124px;width:124px;height:62px}}
 @media(prefers-reduced-motion:reduce){.math-orbiting-points,.math-orbit-ring,.math-symbol{animation:none!important}}
 .hero-content-cards .home-content-card{transform:translateY(0);transition:transform .24s ease,box-shadow .24s ease,border-color .24s ease}
 .hero-content-cards .home-card-illustration{transform:translateY(0) rotate(0deg);transition:transform .32s cubic-bezier(.2,.75,.3,1)}
