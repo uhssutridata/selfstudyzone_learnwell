@@ -26,9 +26,10 @@ TANGENT_SVG = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 480" r
   </line>
   <circle cx="250" cy="250" r="7" fill="#293b28" opacity="0"><animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;.19;.90;.94;1" dur="13s" repeatCount="indefinite"/></circle>
   <circle cx="380" cy="250" r="7" fill="#df7b48" opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;.33;.35;.90;.94;1" dur="13s" repeatCount="indefinite"/></circle>
-  <path d="M380 250h-28v-28" fill="none" stroke="#df7b48" stroke-width="5" stroke-linejoin="round" filter="url(#glow)" opacity="0">
+  <path d="M380 250h-28v-28h28" fill="none" stroke="#df7b48" stroke-width="5" stroke-linejoin="round" filter="url(#glow)" opacity="0">
     <animate attributeName="opacity" values="0;0;1;.45;1;0;0" keyTimes="0;.445;.47;.68;.90;.94;1" dur="13s" repeatCount="indefinite"/>
   </path>
+  <text x="337" y="216" fill="#a4542e" font-family="system-ui,sans-serif" font-size="16" font-weight="800" opacity="0">90°<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;.445;.47;.90;.94;1" dur="13s" repeatCount="indefinite"/></text>
   <text x="230" y="281" fill="#293b28" font-family="system-ui,sans-serif" font-size="22" font-weight="700" opacity="0">O<animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;.19;.90;.94;1" dur="13s" repeatCount="indefinite"/></text>
   <text x="392" y="256" fill="#293b28" font-family="system-ui,sans-serif" font-size="22" font-weight="700" opacity="0">T<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;.33;.35;.90;.94;1" dur="13s" repeatCount="indefinite"/></text>
   <text x="288" y="238" fill="#80552f" font-family="system-ui,sans-serif" font-size="17" font-weight="700" opacity="0">radius OT<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;.445;.47;.90;.94;1" dur="13s" repeatCount="indefinite"/></text>
@@ -39,7 +40,7 @@ TANGENT_SVG = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 480" r
   <text x="470" y="258" fill="#80552f" font-family="system-ui,sans-serif" font-size="17" font-weight="700">3  Join centre O to T</text>
   <text x="470" y="314" fill="#626c5b" font-family="system-ui,sans-serif" font-size="17">The radius meets the tangent</text>
   <text x="470" y="340" fill="#626c5b" font-family="system-ui,sans-serif" font-size="17">at a right angle.</text>
-  <text x="470" y="393" fill="#456c3a" font-family="Georgia,serif" font-size="30" font-weight="700">∠OTangent = 90°</text>
+  <text x="470" y="393" fill="#456c3a" font-family="Georgia,serif" font-size="28" font-weight="700">∠(OT, tangent) = 90°</text>
   <text x="48" y="450" fill="#737a6d" font-family="system-ui,sans-serif" font-size="15">The circle is drawn first; the tangent and radius are drawn in sequence.</text>
 </svg>'''
 
