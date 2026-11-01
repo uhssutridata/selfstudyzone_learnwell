@@ -9,3 +9,4 @@
 @media(max-width:760px){.topbar nav.site-nav>a:nth-child(2){display:inline-flex}}
 @media(max-width:760px){.home-page .mobile-menu-toggle,.home-page .site-nav{display:none!important}}
 .brand-tagline{font-size:13px}.topbar .brand-tagline{font-size:12px}@media(max-width:480px){.brand-tagline{font-size:11px}.topbar .brand-tagline{font-size:10px}}
+.topbar .brand-tagline{font-size:22px}footer .brand-tagline{font-size:18px}@media(max-width:480px){.topbar .brand-tagline{font-size:18px}footer .brand-tagline{font-size:17px}}
