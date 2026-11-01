@@ -1,6 +1,12 @@
 <section class="hero hero-{{ home_settings.layout }}">
   <div class="hero-copy">
-    <div class="hero-eyebrow-row"><span class="eyebrow">{{ home_settings.hero_eyebrow }}</span><svg class="math-hero-svg" viewBox="0 0 190 70" role="img" aria-label="A tangent line stays perpendicular to a circle's radius at the point of tangency: r perpendicular to t equals 90 degrees."><circle class="tangent-circle" cx="34" cy="35" r="24"/><circle class="tangent-center" cx="34" cy="35" r="2.5"/><g class="tangent-rotor"><line class="tangent-radius" x1="34" y1="35" x2="58" y2="35"/><line class="tangent-line" x1="58" y1="8" x2="58" y2="62"/><path class="tangent-right-angle" d="M58 35h-8v8h8"/><circle class="tangent-point" cx="58" cy="35" r="3"/><text class="tangent-label" x="42" y="31">r</text><text class="tangent-label" x="62" y="17">t</text></g><text class="tangent-formula" x="91" y="30">r ⟂ t</text><text class="tangent-degrees" x="91" y="49">= 90°</text></svg></div>
+    <div class="hero-eyebrow-row">
+      <span class="eyebrow">{{ home_settings.hero_eyebrow }}</span>
+      <div class="hero-math-animations">
+        <svg class="math-hero-svg" viewBox="0 0 140 68" role="img" aria-label="Animated mathematical symbols orbiting pi"><ellipse class="math-orbit-ring" cx="70" cy="34" rx="36" ry="19"/><circle class="math-center" cx="70" cy="34" r="14"/><text class="math-center-symbol" x="70" y="39" text-anchor="middle">π</text><g class="math-orbiting-points"><circle cx="34" cy="34" r="4"/><circle cx="106" cy="34" r="3"/></g><text class="math-symbol math-sigma" x="17" y="20">Σ</text><text class="math-symbol math-root" x="112" y="56">√x</text><text class="math-symbol math-square" x="57" y="8">x²</text></svg>
+        <svg class="tangent-hero-svg" viewBox="0 0 190 70" role="img" aria-label="A tangent line stays perpendicular to a circle's radius at the point of tangency: r perpendicular to t equals 90 degrees."><circle class="tangent-circle" cx="34" cy="35" r="24"/><circle class="tangent-center" cx="34" cy="35" r="2.5"/><g class="tangent-rotor"><line class="tangent-radius" x1="34" y1="35" x2="58" y2="35"/><line class="tangent-line" x1="58" y1="8" x2="58" y2="62"/><path class="tangent-right-angle" d="M58 35h-8v8h8"/><circle class="tangent-point" cx="58" cy="35" r="3"/><text class="tangent-label" x="42" y="31">r</text><text class="tangent-label" x="62" y="17">t</text></g><text class="tangent-formula" x="91" y="30">r ⟂ t</text><text class="tangent-degrees" x="91" y="49">= 90°</text></svg>
+      </div>
+    </div>
     <h1>{{ home_settings.hero_title }}<br><em>{{ home_settings.hero_highlight }}</em></h1>
     <p>{{ home_settings.hero_description }}</p>
     <form class="search" method="get">
