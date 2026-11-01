@@ -72,7 +72,7 @@
 @media(max-width:480px){.hero-eyebrow-row{gap:4px;min-height:64px}.math-hero-svg{flex-basis:124px;width:124px;height:62px}}
 @media(prefers-reduced-motion:reduce){.math-orbiting-points,.math-orbit-ring,.math-symbol{animation:none!important}}
 .home-science-doodles{display:flex;align-items:center;gap:13px;flex:0 0 auto;color:#718866}
-.home-science-doodles svg{display:block;width:82px;height:62px;overflow:visible}
+.home-science-doodles svg{display:block;width:108px;height:82px;overflow:visible}
 .physics-electron{transform-origin:50px 35px;animation:physics-orbit 5s linear infinite}
 .physics-wave{stroke-dasharray:7 5;animation:physics-wave-flow 2.5s linear infinite}
 .chem-bubble{transform-box:fill-box;transform-origin:center;animation:chemistry-bubble 2s ease-in-out infinite}
@@ -80,8 +80,8 @@
 @keyframes physics-orbit{to{transform:rotate(360deg)}}
 @keyframes physics-wave-flow{to{stroke-dashoffset:-24}}
 @keyframes chemistry-bubble{0%,100%{transform:translateY(2px);opacity:.55}50%{transform:translateY(-7px);opacity:1}}
-@media(max-width:760px){.home-science-doodles{gap:4px}.home-science-doodles svg{width:65px;height:52px}}
-@media(max-width:520px){.home-science-doodles svg{width:48px;height:42px}.home-science-doodles{gap:0}}
+@media(max-width:760px){.home-science-doodles{gap:4px}.home-science-doodles svg{width:86px;height:66px}}
+@media(max-width:520px){.home-science-doodles svg{width:62px;height:50px}.home-science-doodles{gap:0}}
 @media(prefers-reduced-motion:reduce){.physics-electron,.physics-wave,.chem-bubble{animation:none!important}}
 .hero-content-cards .home-content-card{transform:translateY(0);transition:transform .24s ease,box-shadow .24s ease,border-color .24s ease}
 .hero-content-cards .home-card-illustration{transform:translateY(0) rotate(0deg);transition:transform .32s cubic-bezier(.2,.75,.3,1)}
