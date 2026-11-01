@@ -6,41 +6,41 @@ from courses.models import Course, Lesson, LessonQuestion, UserProfile
 
 
 TANGENT_SVG = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 480" role="img" aria-labelledby="title desc">
-  <title id="title">Why a tangent is perpendicular to the radius</title>
-  <desc id="desc">The circle and radius stay fixed while a line through the point of contact tilts. When tilted it cuts the circle a second time; only the perpendicular position touches once.</desc>
+  <title id="title">Drawing a circle, its tangent, and its radius</title>
+  <desc id="desc">The circle is drawn first. A tangent is drawn next, touching the circle once. Finally the radius is drawn from the centre to that point, showing the 90 degree angle.</desc>
   <defs>
     <linearGradient id="bg" x2="1" y2="1"><stop stop-color="#f1f6e9"/><stop offset="1" stop-color="#fff"/></linearGradient>
     <filter id="glow"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
   </defs>
   <rect width="900" height="480" rx="28" fill="url(#bg)"/>
   <text x="48" y="55" fill="#293b28" font-family="system-ui,sans-serif" font-size="25" font-weight="700">Why does the tangent meet the radius at 90°?</text>
-  <circle cx="250" cy="250" r="130" fill="#e6eddc" stroke="#456c3a" stroke-width="5"/>
-  <line x1="250" y1="250" x2="380" y2="250" stroke="#b47740" stroke-width="6" stroke-linecap="round"/>
-  <g transform="rotate(0 380 250)">
-    <line x1="380" y1="75" x2="380" y2="425" stroke="#486d9b" stroke-width="6" stroke-linecap="round"/>
-    <animateTransform attributeName="transform" type="rotate" values="0 380 250;18 380 250;0 380 250" keyTimes="0;.5;1" dur="6s" repeatCount="indefinite"/>
-  </g>
-  <circle cx="380" cy="250" r="7" fill="#df7b48"/>
-  <circle cx="355" cy="327" r="7" fill="#df7b48" opacity="0">
-    <animate attributeName="opacity" values="0;1;0" keyTimes="0;.5;1" dur="6s" repeatCount="indefinite"/>
+  <circle cx="250" cy="250" r="130" fill="#e6eddc" fill-opacity="0" stroke="#456c3a" stroke-width="5" stroke-dasharray="817" stroke-linecap="round">
+    <animate attributeName="stroke-dashoffset" values="817;0;0;817;817" keyTimes="0;.19;.90;.94;1" dur="13s" repeatCount="indefinite"/>
+    <animate attributeName="fill-opacity" values="0;1;1;0;0" keyTimes="0;.19;.90;.94;1" dur="13s" repeatCount="indefinite"/>
   </circle>
-  <path d="M380 250h-28v-28" fill="none" stroke="#df7b48" stroke-width="5" stroke-linejoin="round" filter="url(#glow)">
-    <animate attributeName="opacity" values="1;.15;1" keyTimes="0;.5;1" dur="6s" repeatCount="indefinite"/>
+  <line x1="380" y1="75" x2="380" y2="425" stroke="#486d9b" stroke-width="6" stroke-linecap="round" stroke-dasharray="350">
+    <animate attributeName="stroke-dashoffset" values="350;350;0;0;350;350" keyTimes="0;.215;.33;.90;.94;1" dur="13s" repeatCount="indefinite"/>
+  </line>
+  <line x1="250" y1="250" x2="380" y2="250" stroke="#b47740" stroke-width="6" stroke-linecap="round" stroke-dasharray="130">
+    <animate attributeName="stroke-dashoffset" values="130;130;0;0;130;130" keyTimes="0;.35;.445;.90;.94;1" dur="13s" repeatCount="indefinite"/>
+  </line>
+  <circle cx="250" cy="250" r="7" fill="#293b28" opacity="0"><animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;.19;.90;.94;1" dur="13s" repeatCount="indefinite"/></circle>
+  <circle cx="380" cy="250" r="7" fill="#df7b48" opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;.33;.35;.90;.94;1" dur="13s" repeatCount="indefinite"/></circle>
+  <path d="M380 250h-28v-28" fill="none" stroke="#df7b48" stroke-width="5" stroke-linejoin="round" filter="url(#glow)" opacity="0">
+    <animate attributeName="opacity" values="0;0;1;.45;1;0;0" keyTimes="0;.445;.47;.68;.90;.94;1" dur="13s" repeatCount="indefinite"/>
   </path>
-  <circle cx="250" cy="250" r="7" fill="#293b28"/>
-  <text x="230" y="281" fill="#293b28" font-family="system-ui,sans-serif" font-size="22" font-weight="700">O</text>
-  <text x="392" y="256" fill="#293b28" font-family="system-ui,sans-serif" font-size="22" font-weight="700">T</text>
-  <text x="288" y="238" fill="#80552f" font-family="system-ui,sans-serif" font-size="17" font-weight="700">radius OT</text>
-  <text x="405" y="115" fill="#3f6089" font-family="system-ui,sans-serif" font-size="17" font-weight="700">line through T</text>
-  <text x="470" y="150" fill="#293b28" font-family="Georgia,serif" font-size="29" font-weight="700">Watch the line tilt</text>
-  <text x="470" y="190" fill="#626c5b" font-family="system-ui,sans-serif" font-size="17">The circle and radius stay still.</text>
-  <text x="470" y="220" fill="#626c5b" font-family="system-ui,sans-serif" font-size="17">When the line tilts, it enters the</text>
-  <text x="470" y="246" fill="#626c5b" font-family="system-ui,sans-serif" font-size="17">circle and meets it a second time.</text>
-  <text x="470" y="294" fill="#456c3a" font-family="Georgia,serif" font-size="27" font-weight="700">A tangent touches once.</text>
-  <text x="470" y="329" fill="#626c5b" font-family="system-ui,sans-serif" font-size="17">So it cannot tilt into the circle.</text>
-  <text x="470" y="370" fill="#80552f" font-family="Georgia,serif" font-size="26" font-weight="700">Therefore OT ⟂ tangent</text>
-  <text x="470" y="408" fill="#456c3a" font-family="Georgia,serif" font-size="31" font-weight="700">∠OTangent = 90°</text>
-  <text x="48" y="450" fill="#737a6d" font-family="system-ui,sans-serif" font-size="15">The second point appears only while the line is tilted. The circle itself never rotates.</text>
+  <text x="230" y="281" fill="#293b28" font-family="system-ui,sans-serif" font-size="22" font-weight="700" opacity="0">O<animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;.19;.90;.94;1" dur="13s" repeatCount="indefinite"/></text>
+  <text x="392" y="256" fill="#293b28" font-family="system-ui,sans-serif" font-size="22" font-weight="700" opacity="0">T<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;.33;.35;.90;.94;1" dur="13s" repeatCount="indefinite"/></text>
+  <text x="288" y="238" fill="#80552f" font-family="system-ui,sans-serif" font-size="17" font-weight="700" opacity="0">radius OT<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;.445;.47;.90;.94;1" dur="13s" repeatCount="indefinite"/></text>
+  <text x="405" y="115" fill="#3f6089" font-family="system-ui,sans-serif" font-size="17" font-weight="700" opacity="0">tangent<animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;.33;.35;.90;.94;1" dur="13s" repeatCount="indefinite"/></text>
+  <text x="470" y="150" fill="#293b28" font-family="Georgia,serif" font-size="29" font-weight="700">Watch each part appear</text>
+  <text x="470" y="190" fill="#456c3a" font-family="system-ui,sans-serif" font-size="17" font-weight="700">1  Draw the circle</text>
+  <text x="470" y="224" fill="#3f6089" font-family="system-ui,sans-serif" font-size="17" font-weight="700">2  Draw the tangent at T</text>
+  <text x="470" y="258" fill="#80552f" font-family="system-ui,sans-serif" font-size="17" font-weight="700">3  Join centre O to T</text>
+  <text x="470" y="314" fill="#626c5b" font-family="system-ui,sans-serif" font-size="17">The radius meets the tangent</text>
+  <text x="470" y="340" fill="#626c5b" font-family="system-ui,sans-serif" font-size="17">at a right angle.</text>
+  <text x="470" y="393" fill="#456c3a" font-family="Georgia,serif" font-size="30" font-weight="700">∠OTangent = 90°</text>
+  <text x="48" y="450" fill="#737a6d" font-family="system-ui,sans-serif" font-size="15">The circle is drawn first; the tangent and radius are drawn in sequence.</text>
 </svg>'''
 
 PARABOLA_SVG = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 380" role="img" aria-labelledby="title desc">
@@ -62,7 +62,7 @@ LESSONS = [
     {
         "title": "Why a tangent meets the radius at 90°",
         "content_type": Lesson.ContentType.ANIMATED,
-        "content": "A tangent touches a circle at exactly one point. Imagine tilting a line through the point of contact T: it cuts into the circle and meets it again. A tangent cannot do that, so it must sit at the one position where it just touches. The radius OT to that point is perpendicular to the tangent, making a 90° angle. The animation keeps the circle fixed and tilts only the line.",
+        "content": "Watch the construction in order: the circle is drawn first, then a tangent line touches it at T, and finally the radius OT is drawn from the centre O to T. The small square marks the right angle. A tangent to a circle is perpendicular to the radius at its point of contact, so ∠OTangent is 90°.",
         "youtube_url": "",
         "homework_description": "Draw a circle with centre O and a tangent touching it at T. Add the radius OT, mark the right angle, and explain why the tangent is perpendicular to OT. Upload a photo or a PDF of your work.",
         "duration_minutes": 12,
