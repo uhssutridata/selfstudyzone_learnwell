@@ -1,0 +1,29 @@
+<section class="home-content-cards-section">
+  <div class="home-content-cards">
+    <article class="home-content-card home-notice-card">
+      <div class="home-card-heading"><span class="home-card-icon" aria-hidden="true">✳</span><div><span class="eyebrow">{{ home_settings.notice_eyebrow }}</span><h2>{{ home_settings.notice_title }}</h2></div></div>
+      <div class="home-card-body">
+        {% for notice in home_notices %}
+          {% if forloop.first %}<div class="featured-notice"><time datetime="{{ notice.published_at|date:'c' }}">{{ notice.published_at|date:"M j, Y" }}</time><h3>{{ notice.title }}</h3><p>{{ notice.message|linebreaksbr }}</p></div>{% endif %}
+        {% empty %}<div class="home-card-empty"><strong>Stay in the loop</strong><p>{{ home_settings.notice_empty_text }}</p></div>{% endfor %}
+      </div>
+    </article>
+
+    <article class="home-content-card home-performance-card">
+      <div class="home-card-heading"><span class="home-card-icon" aria-hidden="true">↗</span><div><span class="eyebrow">{{ home_settings.performance_eyebrow }}</span><h2>{{ home_settings.performance_title }}</h2></div></div>
+      <div class="home-card-body">
+        {% for highlight in performance_highlights %}
+          {% if forloop.first %}<div class="featured-performance"><span class="performance-kicker">{{ highlight.class_label|default:"LEARNER SPOTLIGHT" }}</span><h3>{{ highlight.title }}</h3><p>{{ highlight.description }}</p><div class="featured-performance-foot"><span>{{ highlight.student_display_name|default:"A Learnwell learner" }}</span>{% if highlight.metric_value %}<strong><small>{{ highlight.metric_label }}</small>{{ highlight.metric_value }}</strong>{% endif %}</div></div>{% endif %}
+        {% empty %}<div class="home-card-empty"><strong>Every step forward counts</strong><p>{{ home_settings.performance_empty_text }}</p></div>{% endfor %}
+      </div>
+    </article>
+
+    <article class="home-content-card home-feedback-card">
+      <div class="home-card-heading"><span class="home-card-icon" aria-hidden="true">“</span><div><span class="eyebrow">{{ home_settings.feedback_eyebrow }}</span><h2>{{ home_settings.feedback_title }}</h2></div></div>
+      <div class="home-card-body">
+        {% for feedback in home_feedback|slice:":2" %}<div class="featured-feedback"><blockquote>“{{ feedback.quote }}”</blockquote><div class="featured-feedback-author"><span class="feedback-avatar">{{ feedback.display_name|first|upper }}</span><span><strong>{{ feedback.display_name }}</strong><small>{{ feedback.get_role_display }}</small></span></div></div>
+        {% empty %}<div class="home-card-empty"><strong>Many voices, one community</strong><p>{{ home_settings.feedback_empty_text }}</p></div>{% endfor %}
+      </div>
+    </article>
+  </div>
+</section>
