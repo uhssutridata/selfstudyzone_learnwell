@@ -11,7 +11,7 @@ class HomePageSettingsAdmin(admin.ModelAdmin):
         ("Navigation labels", {"fields": ("nav_explore", "nav_learning", "nav_teaching", "nav_parent", "nav_profile", "nav_students", "nav_admin", "nav_login", "nav_signup", "nav_logout")}),
         ("Welcome section", {"fields": ("hero_eyebrow", "hero_title", "hero_highlight", "hero_description", "search_placeholder", "search_button")}),
         ("Illustration", {"fields": ("illustration_text", "illustration_caption")}),
-        ("Course library", {"fields": ("library_eyebrow", "library_title", "all_topics_label", "lesson_label", "previous_page_label", "next_page_label", "empty_title", "empty_text")}),
+        ("Course library", {"fields": ("library_eyebrow", "library_title", "lesson_label", "previous_page_label", "next_page_label", "empty_title", "empty_text")}),
     )
     readonly_fields = ()
 

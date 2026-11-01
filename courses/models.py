@@ -39,7 +39,6 @@ class HomePageSettings(models.Model):
     illustration_caption = models.CharField(max_length=120, default="Small steps. Big ideas.")
     library_eyebrow = models.CharField(max_length=100, default="THE COURSE LIBRARY")
     library_title = models.CharField(max_length=140, default="Find your kind of learning")
-    all_topics_label = models.CharField(max_length=80, default="All topics")
     lesson_label = models.CharField(max_length=40, default="lessons")
     previous_page_label = models.CharField(max_length=40, default="Previous")
     next_page_label = models.CharField(max_length=40, default="Next")
