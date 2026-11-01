@@ -14,7 +14,7 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-Open http://127.0.0.1:8000. Admin is at `/admin/`. A superuser creates and manages courses. Add lessons inline on a course; then open **Lessons** in admin to add multiple-choice questions. Lessons can include text, a YouTube video, an animated SVG, and homework instructions. Students take the quiz and upload homework on the lesson page. Check **Published** to make a course visible in Explore. Learner signup is at `/signup/`.
+Open http://127.0.0.1:8000. Admin is at `/admin/`. A superuser creates and manages courses, selecting the target class and subject for each course. Lessons inherit that class and subject. Add lessons inline on a course; then open **Lessons** in admin to add multiple-choice questions. Lessons can include text, a YouTube video, an animated SVG, and homework instructions. Students take the quiz and upload homework on the lesson page. Check **Published** to make a course visible to eligible students in Explore. Learner signup is at `/signup/`.
 
 To add the editable sample course with animated SVG, Manim/3Blue1Brown video lessons, quizzes, and homework, first create or retain a teacher account, then run:
 

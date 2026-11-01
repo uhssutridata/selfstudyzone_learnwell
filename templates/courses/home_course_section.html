@@ -9,7 +9,7 @@
   <div class="course-grid">
     {% for course in courses %}
       <article class="course-card">
-        <a class="course-cover cover-{{ forloop.counter0|add:1|divisibleby:4|yesno:'4,1' }}" href="{{ course.get_absolute_url }}"><span class="cover-label">{{ course.category }}</span><span class="cover-shape">✳</span></a>
+        <a class="course-cover cover-{{ forloop.counter0|add:1|divisibleby:4|yesno:'4,1' }}" href="{{ course.get_absolute_url }}"><span class="cover-label">{{ course.get_subject_display }} · {{ course.get_class_name_display }}</span><span class="cover-shape">✳</span></a>
         <div class="course-info"><div class="meta"><span>{{ course.level }}</span><span>{{ course.lessons.count }} {{ home_settings.lesson_label }}</span></div><h3><a href="{{ course.get_absolute_url }}">{{ course.title }}</a></h3><p>{{ course.subtitle|default:course.description|truncatechars:100 }}</p><div class="teacher"><span class="avatar">{{ course.instructor.username|first|upper }}</span><span>{{ course.instructor.get_full_name|default:course.instructor.username }}</span><span class="arrow">↗</span></div></div>
       </article>
     {% empty %}<div class="empty-state"><span>✳</span><h3>{{ home_settings.empty_title }}</h3><p>{{ home_settings.empty_text }}</p></div>{% endfor %}

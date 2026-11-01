@@ -8,12 +8,31 @@ from django.db.models import F, Q
 from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.defaultfilters import slugify
+import re
 import secrets
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import ListView, DetailView
 from django.utils import timezone
 from .forms import ExamResultForm, HomeworkEvaluationForm, HomeworkSubmissionForm, HomeworkStatusForm, LessonHomeworkForm, LessonQuizForm, ParentProfileForm, ParentRegistrationForm, RoleAuthenticationForm, StudentProfileForm, StudentRegistrationForm, StudentSearchForm, TeacherAssistedStudentForm, TeacherProfileForm, TeacherRegistrationForm
 from .models import Course, Enrollment, HomePageFeedback, HomePageNotice, HomePagePerformanceHighlight, HomeworkSubmission, Lesson, LessonProgress, LessonQuizAttempt, ParentDetails, ParentWatchlist, StudyTime, StudentDetails, Subscription, TeacherDetails, TeacherStudentApproval, UserProfile
+
+
+def _student_class_key(user):
+    details = StudentDetails.objects.filter(profile__user=user).only("class_name").first()
+    if not details or not details.class_name:
+        return ""
+    value = details.class_name.strip().lower().replace("_", " ")
+    value = re.sub(r"^(class|grade|standard|std)\s*", "", value)
+    value = re.sub(r"\s*(class|grade|standard|std)$", "", value)
+    value = re.sub(r"^(\d+)(st|nd|rd|th)$", r"\1", value.strip())
+    roman_levels = {"i": "1", "ii": "2", "iii": "3", "iv": "4", "v": "5", "vi": "6", "vii": "7", "viii": "8", "ix": "9", "x": "10", "xi": "11", "xii": "12"}
+    if value in roman_levels:
+        return roman_levels[value]
+    if value in {"pre primary", "nursery", "kindergarten", "kg", "lkg", "ukg"}:
+        return "pre_primary"
+    if value.isdigit() and 1 <= int(value) <= 12:
+        return str(int(value))
+    return ""
 
 
 class RoleLoginView(LoginView):
@@ -43,6 +62,9 @@ class CourseListView(ListView):
 
     def get_queryset(self):
         qs = Course.objects.filter(published=True).select_related("instructor")
+        if self.request.user.is_authenticated and UserProfile.objects.filter(user=self.request.user, role=UserProfile.Role.STUDENT).exists():
+            class_key = _student_class_key(self.request.user)
+            qs = qs.filter(class_name=class_key) if class_key else qs.none()
         query = self.request.GET.get("q", "").strip()
         category = self.request.GET.get("category", "").strip()
         if query:
@@ -77,7 +99,11 @@ class CourseDetailView(DetailView):
     slug_url_kwarg = "slug"
 
     def get_queryset(self):
-        return Course.objects.filter(published=True).select_related("instructor").prefetch_related("lessons")
+        queryset = Course.objects.filter(published=True).select_related("instructor").prefetch_related("lessons")
+        if self.request.user.is_authenticated and UserProfile.objects.filter(user=self.request.user, role=UserProfile.Role.STUDENT).exists():
+            class_key = _student_class_key(self.request.user)
+            queryset = queryset.filter(class_name=class_key) if class_key else queryset.none()
+        return queryset
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -95,7 +121,8 @@ def dashboard(request):
         parent = ParentDetails.objects.filter(profile=profile).prefetch_related("children").first()
         watchlist = ParentWatchlist.objects.filter(parent=parent).select_related("student", "student__profile__user", "student__study_time").prefetch_related("student__exam_results", "student__homework_statuses") if parent else []
         return render(request, "courses/dashboard.html", {"role": profile.role, "cards": [], "parent_details": parent, "watchlist": watchlist})
-    enrollments = Enrollment.objects.filter(student=request.user).select_related("course", "course__instructor").prefetch_related("progress", "course__lessons")
+    class_key = _student_class_key(request.user)
+    enrollments = Enrollment.objects.filter(student=request.user, course__class_name=class_key).select_related("course", "course__instructor").prefetch_related("progress", "course__lessons") if class_key else Enrollment.objects.none()
     cards = []
     for enrollment in enrollments:
         total = enrollment.course.lessons.count()
@@ -103,7 +130,7 @@ def dashboard(request):
         cards.append({"enrollment": enrollment, "total": total, "done": done, "percent": round(done * 100 / total) if total else 0})
     student_details = StudentDetails.objects.filter(profile=profile).first()
     subscription = Subscription.objects.get_or_create(student=student_details)[0] if student_details else None
-    return render(request, "courses/dashboard.html", {"role": profile.role, "cards": cards, "subscription": subscription})
+    return render(request, "courses/dashboard.html", {"role": profile.role, "cards": cards, "subscription": subscription, "student_class_label": dict(Course.CLASS_LEVELS).get(class_key, "Unassigned")})
 
 
 @login_required
@@ -177,6 +204,8 @@ def enroll(request, slug):
             messages.error(request, "Only student accounts can enroll in courses.")
             return redirect("dashboard")
         course = get_object_or_404(Course, slug=slug, published=True)
+        if course.class_name != _student_class_key(request.user):
+            return HttpResponseForbidden("This course is for a different class.")
         Enrollment.objects.get_or_create(student=request.user, course=course)
         messages.success(request, f"You’re enrolled in {course.title}.")
         return redirect("dashboard")
@@ -184,7 +213,7 @@ def enroll(request, slug):
 
 @login_required
 def lesson_detail(request, slug, lesson_id):
-    enrollment = get_object_or_404(Enrollment, student=request.user, course__slug=slug, course__published=True)
+    enrollment = get_object_or_404(Enrollment, student=request.user, course__slug=slug, course__published=True, course__class_name=_student_class_key(request.user))
     lesson = get_object_or_404(Lesson, id=lesson_id, course=enrollment.course)
     completed = enrollment.progress.filter(lesson=lesson).exists()
     questions = list(lesson.questions.all())
@@ -211,7 +240,7 @@ def lesson_detail(request, slug, lesson_id):
 def submit_lesson_homework(request, slug, lesson_id):
     if not _has_role(request, UserProfile.Role.STUDENT):
         return HttpResponseForbidden("Student accounts only.")
-    enrollment = get_object_or_404(Enrollment, student=request.user, course__slug=slug, course__published=True)
+    enrollment = get_object_or_404(Enrollment, student=request.user, course__slug=slug, course__published=True, course__class_name=_student_class_key(request.user))
     lesson = get_object_or_404(Lesson, id=lesson_id, course=enrollment.course)
     if not lesson.homework_description.strip():
         messages.error(request, "This lesson does not have homework assigned.")
@@ -231,7 +260,7 @@ def submit_lesson_homework(request, slug, lesson_id):
 @login_required
 def complete_lesson(request, slug, lesson_id):
     if request.method == "POST":
-        enrollment = get_object_or_404(Enrollment, student=request.user, course__slug=slug)
+        enrollment = get_object_or_404(Enrollment, student=request.user, course__slug=slug, course__class_name=_student_class_key(request.user))
         lesson = get_object_or_404(Lesson, id=lesson_id, course=enrollment.course)
         LessonProgress.objects.get_or_create(enrollment=enrollment, lesson=lesson)
         messages.success(request, "Lesson marked complete.")

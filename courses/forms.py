@@ -5,7 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.forms.widgets import CheckboxSelectMultiple
 
-from .models import ExamResult, HomeworkStatus, HomeworkSubmission, ParentDetails, StudentDetails, TeacherDetails, UserProfile
+from .models import Course, ExamResult, HomeworkStatus, HomeworkSubmission, ParentDetails, StudentDetails, TeacherDetails, UserProfile
 
 TEACHING_SUBJECTS = [
     ("mathematics", "Mathematics"),
@@ -41,7 +41,7 @@ class StudentRegistrationForm(RegistrationForm):
     father_name = forms.CharField(max_length=160, label="Father’s name", required=False)
     mother_name = forms.CharField(max_length=160, label="Mother’s name", required=False)
     school_name = forms.CharField(max_length=200, label="School name", required=False)
-    class_name = forms.CharField(max_length=40, label="Class", required=False)
+    class_name = forms.ChoiceField(choices=[("", "Select class")] + Course.CLASS_LEVELS, label="Class", required=False)
     roll_number = forms.CharField(max_length=40, label="Roll number", required=False)
     address = forms.CharField(widget=forms.Textarea(attrs={"rows": 3}), required=False, label="Address")
     parent_mobile_number = forms.CharField(max_length=30, required=False, label="Parent mobile number")
@@ -65,6 +65,8 @@ class StudentRegistrationForm(RegistrationForm):
 
 
 class TeacherAssistedStudentForm(forms.ModelForm):
+    class_name = forms.ChoiceField(choices=Course.CLASS_LEVELS, label="Class")
+
     class Meta:
         model = StudentDetails
         fields = ("student_name", "father_name", "mother_name", "class_name", "roll_number", "school_name", "address", "parent_mobile_number", "block", "district", "state")
@@ -188,6 +190,7 @@ class ProfileAvatarMixin:
 class StudentProfileForm(ProfileAvatarMixin, forms.ModelForm):
     avatar = forms.ImageField(required=False, label="Profile photo")
     email = forms.EmailField(required=False, label="Email for password recovery")
+    class_name = forms.ChoiceField(choices=[("", "Select class")] + Course.CLASS_LEVELS, required=False, label="Class")
     class Meta:
         model = StudentDetails
         fields = ("student_name", "father_name", "mother_name", "school_name", "class_name", "roll_number", "address", "parent_mobile_number", "block", "district", "state")

@@ -105,8 +105,8 @@ class LessonQuizAttemptAdmin(admin.ModelAdmin):
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ("title", "instructor", "category", "level", "published", "learner_count")
-    list_filter = ("published", "level", "category")
+    list_display = ("title", "class_name", "subject", "instructor", "category", "level", "published", "learner_count")
+    list_filter = ("published", "class_name", "subject", "level", "category")
     search_fields = ("title", "description", "instructor__username")
     prepopulated_fields = {"slug": ("title",)}
     inlines = [LessonInline]

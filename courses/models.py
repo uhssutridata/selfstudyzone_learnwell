@@ -301,12 +301,22 @@ class Subscription(models.Model):
         return f"{self.student.student_name}: {self.get_plan_display()} ({self.get_status_display()})"
 
 class Course(models.Model):
+    CLASS_LEVELS = [("pre_primary", "Pre-primary")] + [(str(level), f"Class {level}") for level in range(1, 13)]
+    SUBJECTS = [
+        ("mathematics", "Mathematics"), ("science", "General Science"),
+        ("physics", "Physics"), ("chemistry", "Chemistry"), ("biology", "Biology"),
+        ("english", "English"), ("hindi", "Hindi"), ("social_studies", "Social Studies"),
+        ("computer_science", "Computer Science"), ("other", "Other"),
+    ]
+
     title = models.CharField(max_length=180)
     slug = models.SlugField(unique=True)
     subtitle = models.CharField(max_length=240, blank=True)
     description = models.TextField()
     instructor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="courses")
     category = models.CharField(max_length=80, default="General")
+    class_name = models.CharField(max_length=24, choices=CLASS_LEVELS)
+    subject = models.CharField(max_length=24, choices=SUBJECTS)
     level = models.CharField(max_length=20, choices=[("Beginner", "Beginner"), ("Intermediate", "Intermediate"), ("Advanced", "Advanced")], default="Beginner")
     published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

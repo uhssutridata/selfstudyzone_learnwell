@@ -144,6 +144,8 @@ class Command(BaseCommand):
                 "description": "An editable sample course demonstrating text lessons, animated SVG, embedded Manim and 3Blue1Brown videos, multiple-choice quizzes, and homework reviewed by authorized teachers.",
                 "instructor": teacher_profile.user,
                 "category": "Mathematics",
+                "class_name": "8",
+                "subject": "mathematics",
                 "level": "Beginner",
                 "published": True,
             },
