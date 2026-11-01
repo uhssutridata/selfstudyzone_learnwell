@@ -37,6 +37,8 @@ class TeacherDetails(models.Model):
     is_private_tutor = models.BooleanField(default=False)
     mobile_number = models.CharField(max_length=30)
     email = models.EmailField()
+    block = models.CharField(max_length=120, blank=True)
+    district = models.CharField(max_length=120, blank=True)
 
     def __str__(self):
         return f"{self.profile.user.username} — {self.subject}"
@@ -46,6 +48,8 @@ class ParentDetails(models.Model):
     parent_name = models.CharField(max_length=160)
     address = models.TextField()
     mobile_number = models.CharField(max_length=30)
+    block = models.CharField(max_length=120, blank=True)
+    district = models.CharField(max_length=120, blank=True)
 
     def __str__(self):
         return self.parent_name

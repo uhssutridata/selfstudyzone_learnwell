@@ -2,8 +2,12 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
+from django.contrib.auth.models import User
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.defaultfilters import slugify
+from django.views.decorators.http import require_GET
 from django.views.generic import ListView, DetailView
 from .forms import ParentRegistrationForm, RoleAuthenticationForm, StudentRegistrationForm, TeacherRegistrationForm
 from .models import Course, Enrollment, Lesson, LessonProgress, ParentDetails, UserProfile
@@ -129,3 +133,20 @@ def signup(request):
         login(request, user)
         return redirect("dashboard")
     return render(request, "registration/signup.html", {"form": form, "selected_role": role, "role_label": UserProfile.Role(role).label if role in forms_by_role else ""})
+
+
+@require_GET
+def username_suggestion(request):
+    parts = [request.GET.get(key, "").strip() for key in ("name", "block", "district")]
+    if not parts[0]:
+        return JsonResponse({"username": ""})
+    base = slugify("-".join(part for part in parts if part))[:140].strip("-")
+    if not base:
+        return JsonResponse({"username": ""})
+    candidate = base
+    serial = 2
+    while User.objects.filter(username__iexact=candidate).exists():
+        suffix = f"-{serial}"
+        candidate = f"{base[:150 - len(suffix)]}{suffix}"
+        serial += 1
+    return JsonResponse({"username": candidate})

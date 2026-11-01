@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Create an account — Learnwell{% endblock %}
 {% block content %}
 <section class="signup-hero">
@@ -36,6 +37,7 @@
     <form method="post">{% csrf_token %}<input type="hidden" name="role" value="{{ selected_role }}">{{ form.non_field_errors }}
       {% for field in form %}
         <label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
+        {% if field.name == 'username' %}<div class="username-suggestion" data-suggestion-box hidden><span data-suggestion-message></span> <button type="button" class="suggestion-choice" data-suggestion-choice></button></div>{% endif %}
         {% if field.help_text %}<div class="help-text">{{ field.help_text|safe }}</div>{% endif %}{{ field.errors }}
       {% endfor %}
       <button class="button button-wide">Create my account →</button>
@@ -43,4 +45,5 @@
     <p class="auth-switch">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
   </div>
 </section>{% else %}<div class="signup-prompt" id="signup-form">Select one of the account types above to open its registration form.</div>{% endif %}
+{% if selected_role %}<script src="{% static 'js/signup.js' %}" defer></script>{% endif %}
 {% endblock %}
