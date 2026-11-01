@@ -1,11 +1,17 @@
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.views import LoginView
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, DetailView
-from .models import Course, Enrollment, Lesson, LessonProgress
+from .forms import RoleAuthenticationForm, SignUpForm
+from .models import Course, Enrollment, Lesson, LessonProgress, UserProfile
+
+
+class RoleLoginView(LoginView):
+    template_name = "registration/login.html"
+    authentication_form = RoleAuthenticationForm
 
 class CourseListView(ListView):
     model = Course
@@ -47,17 +53,27 @@ class CourseDetailView(DetailView):
 
 @login_required
 def dashboard(request):
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    if profile.role == UserProfile.Role.TEACHER:
+        courses = Course.objects.filter(instructor=request.user).prefetch_related("lessons")
+        return render(request, "courses/dashboard.html", {"role": profile.role, "teacher_courses": courses})
+    if profile.role == UserProfile.Role.PARENT:
+        return render(request, "courses/dashboard.html", {"role": profile.role, "cards": []})
     enrollments = Enrollment.objects.filter(student=request.user).select_related("course", "course__instructor").prefetch_related("progress", "course__lessons")
     cards = []
     for enrollment in enrollments:
         total = enrollment.course.lessons.count()
         done = enrollment.progress.count()
         cards.append({"enrollment": enrollment, "total": total, "done": done, "percent": round(done * 100 / total) if total else 0})
-    return render(request, "courses/dashboard.html", {"cards": cards})
+    return render(request, "courses/dashboard.html", {"role": profile.role, "cards": cards})
 
 @login_required
 def enroll(request, slug):
     if request.method == "POST":
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        if profile.role != UserProfile.Role.STUDENT:
+            messages.error(request, "Only student accounts can enroll in courses.")
+            return redirect("dashboard")
         course = get_object_or_404(Course, slug=slug, published=True)
         Enrollment.objects.get_or_create(student=request.user, course=course)
         messages.success(request, f"You’re enrolled in {course.title}.")
@@ -84,7 +100,7 @@ def complete_lesson(request, slug, lesson_id):
 def signup(request):
     if request.user.is_authenticated:
         return redirect("dashboard")
-    form = UserCreationForm(request.POST or None)
+    form = SignUpForm(request.POST or None)
     if request.method == "POST" and form.is_valid():
         user = form.save()
         login(request, user)

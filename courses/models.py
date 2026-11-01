@@ -2,6 +2,18 @@ from django.conf import settings
 from django.db import models
 from django.urls import reverse
 
+class UserProfile(models.Model):
+    class Role(models.TextChoices):
+        STUDENT = "student", "Student"
+        TEACHER = "teacher", "Teacher"
+        PARENT = "parent", "Parent"
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
+    role = models.CharField(max_length=12, choices=Role.choices, default=Role.STUDENT)
+
+    def __str__(self):
+        return f"{self.user.username} ({self.get_role_display()})"
+
 class Course(models.Model):
     title = models.CharField(max_length=180)
     slug = models.SlugField(unique=True)
