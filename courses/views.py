@@ -154,13 +154,16 @@ def profile_edit(request):
     if request.method == "POST" and form.is_valid():
         updated = form.save()
         form.save_avatar(user_profile)
+        request.user.email = form.cleaned_data.get("email", "").strip()
+        user_fields = ["email"]
         if user_profile.role == UserProfile.Role.TEACHER:
             request.user.first_name = form.cleaned_data.get("full_name", "").strip()
             request.user.last_name = ""
-            request.user.save(update_fields=["first_name", "last_name"])
+            user_fields.extend(["first_name", "last_name"])
             if form.verification_details_changed():
                 updated.is_verified = False
                 updated.save(update_fields=["is_verified"])
+        request.user.save(update_fields=user_fields)
         messages.success(request, "Your profile has been updated.")
         return redirect("profile")
     return render(request, "courses/profile_edit.html", {"profile": user_profile, "details": details, "form": form})

@@ -70,4 +70,5 @@
 .password-change-form input:focus{outline:0;border-color:#94ad78;box-shadow:0 0 0 3px #94ad7826}
 .password-change-form .errorlist{margin:5px 0 0}
 .password-change-success>p{color:var(--muted);font-size:14px;margin-bottom:22px}
+.password-forgot-link{margin:23px 0 0;text-align:center;font-size:14px}.password-forgot-link a,.profile-recovery-email{color:var(--green);font-weight:600}.password-forgot-link a{text-decoration:underline;text-underline-offset:3px}.password-forgot-link a:hover{color:#31562b}.profile-recovery-email{margin-top:7px!important;font-size:12px}
 @media(max-width:520px){.profile-account-actions{align-items:stretch;flex-direction:column;gap:12px}.profile-account-actions .button{text-align:center}.password-change-card h1{font-size:36px}}

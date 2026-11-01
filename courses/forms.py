@@ -37,6 +37,7 @@ class RegistrationForm(UserCreationForm):
 
 class StudentRegistrationForm(RegistrationForm):
     student_name = forms.CharField(max_length=160, label="Student name", required=False)
+    email = forms.EmailField(label="Email for password recovery", required=False)
     father_name = forms.CharField(max_length=160, label="Father’s name", required=False)
     mother_name = forms.CharField(max_length=160, label="Mother’s name", required=False)
     school_name = forms.CharField(max_length=200, label="School name", required=False)
@@ -49,12 +50,14 @@ class StudentRegistrationForm(RegistrationForm):
     state = forms.CharField(max_length=120, required=False)
 
     class Meta(RegistrationForm.Meta):
-        fields = ("student_name", "username", "father_name", "mother_name", "school_name", "class_name", "roll_number", "address", "parent_mobile_number", "block", "district", "state")
+        fields = ("student_name", "username", "email", "father_name", "mother_name", "school_name", "class_name", "roll_number", "address", "parent_mobile_number", "block", "district", "state")
 
     def save(self, commit=True):
         user = super().save(commit=commit)
         if commit:
             profile = self.save_profile(user, UserProfile.Role.STUDENT)
+            user.email = self.cleaned_data.get("email", "")
+            user.save(update_fields=["email"])
             StudentDetails.objects.create(profile=profile, **{key: self.cleaned_data[key] for key in (
                 "student_name", "father_name", "mother_name", "school_name", "class_name", "roll_number", "address", "parent_mobile_number", "block", "district", "state"
             )})
@@ -105,7 +108,7 @@ class TeacherRegistrationForm(RegistrationForm):
     school_name = forms.CharField(max_length=200, required=False, label="School name where you teach")
     school_address = forms.CharField(widget=forms.Textarea(attrs={"rows": 3}), required=False, label="School address")
     mobile_number = forms.CharField(max_length=30, label="Mobile number", required=False)
-    email = forms.EmailField(label="Email address", required=False)
+    email = forms.EmailField(label="Email for password recovery", required=False)
 
     class Meta(RegistrationForm.Meta):
         fields = ("full_name", "username", "subjects", "other_subject", "is_private_tutor", "school_name", "school_address", "mobile_number", "email", "block", "district", "state")
@@ -147,6 +150,7 @@ class TeacherRegistrationForm(RegistrationForm):
 
 class ParentRegistrationForm(RegistrationForm):
     parent_name = forms.CharField(max_length=160, label="Your name", required=False)
+    email = forms.EmailField(label="Email for password recovery", required=False)
     block = forms.CharField(max_length=120, required=False, label="Block (optional)")
     district = forms.CharField(max_length=120, required=False, label="District (optional)")
     state = forms.CharField(max_length=120, required=False, label="State (optional)")
@@ -154,7 +158,7 @@ class ParentRegistrationForm(RegistrationForm):
     mobile_number = forms.CharField(max_length=30, label="Mobile number", required=False)
 
     class Meta(RegistrationForm.Meta):
-        fields = ("parent_name", "username", "address", "mobile_number", "block", "district", "state")
+        fields = ("parent_name", "username", "email", "address", "mobile_number", "block", "district", "state")
 
     def clean_mobile_number(self):
         value = self.cleaned_data.get("mobile_number", "").strip()
@@ -168,6 +172,8 @@ class ParentRegistrationForm(RegistrationForm):
         user = super().save(commit=commit)
         if commit:
             profile = self.save_profile(user, UserProfile.Role.PARENT)
+            user.email = self.cleaned_data.get("email", "")
+            user.save(update_fields=["email"])
             parent = ParentDetails.objects.create(profile=profile, parent_name=self.cleaned_data["parent_name"], address=self.cleaned_data["address"], mobile_number=self.cleaned_data["mobile_number"], block=self.cleaned_data["block"], district=self.cleaned_data["district"], state=self.cleaned_data["state"])
         return user
 
@@ -181,10 +187,16 @@ class ProfileAvatarMixin:
 
 class StudentProfileForm(ProfileAvatarMixin, forms.ModelForm):
     avatar = forms.ImageField(required=False, label="Profile photo")
+    email = forms.EmailField(required=False, label="Email for password recovery")
     class Meta:
         model = StudentDetails
         fields = ("student_name", "father_name", "mother_name", "school_name", "class_name", "roll_number", "address", "parent_mobile_number", "block", "district", "state")
         labels = {"student_name": "Full name"}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.profile_id:
+            self.fields["email"].initial = self.instance.profile.user.email
 
 
 class TeacherProfileForm(ProfileAvatarMixin, forms.ModelForm):
@@ -204,6 +216,9 @@ class TeacherProfileForm(ProfileAvatarMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.profile_id:
             self.fields["full_name"].initial = self.instance.profile.user.get_full_name()
+            self.fields["email"].label = "Email for password recovery"
+            if not self.fields["email"].initial:
+                self.fields["email"].initial = self.instance.profile.user.email
         if self.instance and self.instance.subject:
             current = {label: key for key, label in TEACHING_SUBJECTS}
             self.fields["subjects"].initial = [current[s.strip()] for s in self.instance.subject.split(",") if s.strip() in current]
@@ -225,10 +240,16 @@ class TeacherProfileForm(ProfileAvatarMixin, forms.ModelForm):
 
 class ParentProfileForm(ProfileAvatarMixin, forms.ModelForm):
     avatar = forms.ImageField(required=False, label="Profile photo")
+    email = forms.EmailField(required=False, label="Email for password recovery")
     class Meta:
         model = ParentDetails
         fields = ("parent_name", "address", "mobile_number", "block", "district", "state")
         labels = {"parent_name": "Full name"}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.profile_id:
+            self.fields["email"].initial = self.instance.profile.user.email
 
 
 class StudentSearchForm(forms.Form):
