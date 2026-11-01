@@ -61,3 +61,13 @@
 .signup-prompt{font-size:15px}
 @media(max-width:760px){.signup-hero>h1{font-size:44px}.signup-hero>p{font-size:15px}.role-card h2{font-size:27px}.role-card p{font-size:15px}.signup-side-note h2{font-size:28px}}
 @media(max-width:480px){.signup-hero>h1{font-size:40px}.signup-form-lead{font-size:13px}.signup-fields input:not([type=checkbox]),.signup-fields textarea,.signup-fields select{font-size:16px}}
+.profile-account-actions{display:flex;align-items:center;flex-wrap:wrap;gap:16px;margin:19px 0}
+.password-change-card h1{font-size:40px;margin:10px 0 14px}
+.password-change-intro{font-size:13px;color:var(--muted);margin-bottom:20px}
+.password-change-form .password-field{margin-bottom:16px}
+.password-change-form label{display:block;margin:0 0 6px;font-size:12px;font-weight:700}
+.password-change-form input{width:100%;padding:12px;border:1px solid var(--line);border-radius:5px;font:14px var(--sans)}
+.password-change-form input:focus{outline:0;border-color:#94ad78;box-shadow:0 0 0 3px #94ad7826}
+.password-change-form .errorlist{margin:5px 0 0}
+.password-change-success>p{color:var(--muted);font-size:14px;margin-bottom:22px}
+@media(max-width:520px){.profile-account-actions{align-items:stretch;flex-direction:column;gap:12px}.profile-account-actions .button{text-align:center}.password-change-card h1{font-size:36px}}
