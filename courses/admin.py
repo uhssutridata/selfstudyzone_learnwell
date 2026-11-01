@@ -1,5 +1,6 @@
-from django.contrib import admin
-from .models import Course, Enrollment, Lesson, LessonProgress, ParentChild, ParentDetails, StudentDetails, TeacherDetails, UserProfile
+from django.contrib import admin, messages
+from django.utils import timezone
+from .models import Course, Enrollment, ExamResult, HomeworkStatus, Lesson, LessonProgress, ParentChild, ParentDetails, ParentWatchlist, StudentDetails, StudyTime, TeacherDetails, UserProfile
 
 class LessonInline(admin.TabularInline):
     model = Lesson
@@ -17,7 +18,16 @@ admin.site.register(Enrollment)
 admin.site.register(LessonProgress)
 admin.site.register(UserProfile)
 admin.site.register(StudentDetails)
-admin.site.register(TeacherDetails)
+
+@admin.register(TeacherDetails)
+class TeacherDetailsAdmin(admin.ModelAdmin):
+    list_display = ("profile", "subject", "school_name", "is_private_tutor", "is_verified")
+    list_filter = ("is_verified", "is_private_tutor")
+    actions = ("verify_teachers",)
+
+    @admin.action(description="Verify selected teacher accounts")
+    def verify_teachers(self, request, queryset):
+        queryset.update(is_verified=True)
 
 class ParentChildInline(admin.TabularInline):
     model = ParentChild
@@ -28,3 +38,24 @@ class ParentDetailsAdmin(admin.ModelAdmin):
     list_display = ("parent_name", "mobile_number", "profile")
     search_fields = ("parent_name", "mobile_number", "profile__user__username")
     inlines = [ParentChildInline]
+
+@admin.action(description="Approve selected parent watchlist requests")
+def approve_parent_requests(modeladmin, request, queryset):
+    queryset.update(status=ParentWatchlist.Status.APPROVED, reviewed_at=timezone.now(), reviewed_by=request.user)
+    modeladmin.message_user(request, "Selected parent access requests approved.", messages.SUCCESS)
+
+@admin.action(description="Reject selected parent watchlist requests")
+def reject_parent_requests(modeladmin, request, queryset):
+    queryset.update(status=ParentWatchlist.Status.REJECTED, reviewed_at=timezone.now(), reviewed_by=request.user)
+    modeladmin.message_user(request, "Selected parent access requests rejected.", messages.SUCCESS)
+
+@admin.register(ParentWatchlist)
+class ParentWatchlistAdmin(admin.ModelAdmin):
+    list_display = ("parent", "student", "status", "requested_at", "reviewed_by", "reviewed_at")
+    list_filter = ("status",)
+    search_fields = ("parent__parent_name", "parent__profile__user__username", "student__student_name", "student__school_name")
+    actions = (approve_parent_requests, reject_parent_requests)
+
+admin.site.register(ExamResult)
+admin.site.register(HomeworkStatus)
+admin.site.register(StudyTime)

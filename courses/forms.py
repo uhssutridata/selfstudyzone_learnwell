@@ -5,7 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.forms.widgets import CheckboxSelectMultiple
 
-from .models import ParentChild, ParentDetails, StudentDetails, TeacherDetails, UserProfile
+from .models import ExamResult, HomeworkStatus, ParentDetails, StudentDetails, TeacherDetails, UserProfile
 
 TEACHING_SUBJECTS = [
     ("mathematics", "Mathematics"),
@@ -131,14 +131,9 @@ class ParentRegistrationForm(RegistrationForm):
     state = forms.CharField(max_length=120, required=False, label="State (optional)")
     address = forms.CharField(widget=forms.Textarea(attrs={"rows": 3}), label="Your address")
     mobile_number = forms.CharField(max_length=30, label="Mobile number")
-    children = forms.CharField(
-        widget=forms.Textarea(attrs={"rows": 3, "placeholder": "Example: Asha Kumar, Class 6"}),
-        label="Children’s names and classes",
-        help_text="Enter one child per line as: Name, Class",
-    )
 
     class Meta(RegistrationForm.Meta):
-        fields = ("parent_name", "username", "address", "mobile_number", "children", "block", "district", "state")
+        fields = ("parent_name", "username", "address", "mobile_number", "block", "district", "state")
 
     def clean_mobile_number(self):
         value = self.cleaned_data["mobile_number"].strip()
@@ -146,29 +141,41 @@ class ParentRegistrationForm(RegistrationForm):
             raise forms.ValidationError("Enter a valid mobile number.")
         return value
 
-    def clean_children(self):
-        value = self.cleaned_data["children"]
-        rows = []
-        for line in value.splitlines():
-            if not line.strip():
-                continue
-            if "," not in line:
-                raise forms.ValidationError("Use one line per child, with a comma between their name and class.")
-            name, class_name = (part.strip() for part in line.split(",", 1))
-            if not name or not class_name:
-                raise forms.ValidationError("Include both a child’s name and class on every line.")
-            rows.append((name, class_name))
-        if not rows:
-            raise forms.ValidationError("Enter at least one child’s name and class.")
-        return rows
-
     def save(self, commit=True):
         user = super().save(commit=commit)
         if commit:
             profile = self.save_profile(user, UserProfile.Role.PARENT)
             parent = ParentDetails.objects.create(profile=profile, parent_name=self.cleaned_data["parent_name"], address=self.cleaned_data["address"], mobile_number=self.cleaned_data["mobile_number"], block=self.cleaned_data["block"], district=self.cleaned_data["district"], state=self.cleaned_data["state"])
-            ParentChild.objects.bulk_create([ParentChild(parent=parent, name=name, class_name=class_name) for name, class_name in self.cleaned_data["children"]])
         return user
+
+
+class StudentSearchForm(forms.Form):
+    q = forms.CharField(max_length=160, label="Student name", widget=forms.SearchInput(attrs={"placeholder": "Search by student name"}))
+
+
+class ExamResultForm(forms.ModelForm):
+    marks_obtained = forms.DecimalField(max_digits=7, decimal_places=2, min_value=0)
+    maximum_marks = forms.DecimalField(max_digits=7, decimal_places=2, min_value=0.01)
+
+    class Meta:
+        model = ExamResult
+        fields = ("exam_name", "marks_obtained", "maximum_marks", "passed")
+        labels = {"passed": "Passed the exam"}
+
+    def clean(self):
+        cleaned = super().clean()
+        obtained = cleaned.get("marks_obtained")
+        maximum = cleaned.get("maximum_marks")
+        if obtained is not None and maximum is not None and obtained > maximum:
+            self.add_error("marks_obtained", "Marks obtained cannot exceed the maximum marks.")
+        return cleaned
+
+
+class HomeworkStatusForm(forms.ModelForm):
+    class Meta:
+        model = HomeworkStatus
+        fields = ("title", "is_done")
+        labels = {"is_done": "Homework completed"}
 
 
 class RoleAuthenticationForm(AuthenticationForm):

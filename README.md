@@ -16,6 +16,12 @@ python manage.py runserver
 
 Open http://127.0.0.1:8000. Admin is at `/admin/`. Add a course, set a unique slug, add lessons inline, and check **Published** to make it visible in Explore. Learner signup is at `/signup/`.
 
+## Parent and teacher student records
+
+After parent signup, the parent is sent to Parent space to search students whose registered father or mother name matches the parent name. Access requests appear under **Admin → Parent watchlists** and must be approved before performance details are shown. Teachers can search student records after an administrator verifies the teacher profile under **Admin → Teacher details**. School teachers are limited to students at their registered school; verified private tutors can search across schools.
+
+Verified teachers can record exam marks/pass status and homework completion from a student record. Student sessions report active, visible LMS time while a student is signed in. Parents with an approved watchlist link can see exam results, homework status, and recorded time in their dashboard.
+
 ## Git history
 
 This project has its own Git repository in this folder. Save later versions with:

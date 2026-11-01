@@ -40,6 +40,7 @@ class TeacherDetails(models.Model):
     block = models.CharField(max_length=120, blank=True)
     district = models.CharField(max_length=120, blank=True)
     state = models.CharField(max_length=120, blank=True)
+    is_verified = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.profile.user.username} — {self.subject}"
@@ -63,6 +64,63 @@ class ParentChild(models.Model):
 
     def __str__(self):
         return f"{self.name} — {self.class_name}"
+
+class ParentWatchlist(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending review"
+        APPROVED = "approved", "Approved"
+        REJECTED = "rejected", "Rejected"
+
+    parent = models.ForeignKey(ParentDetails, on_delete=models.CASCADE, related_name="watchlist")
+    student = models.ForeignKey(StudentDetails, on_delete=models.CASCADE, related_name="parent_requests")
+    status = models.CharField(max_length=12, choices=Status.choices, default=Status.PENDING)
+    requested_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="reviewed_parent_links")
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["parent", "student"], name="unique_parent_student_watchlist")]
+        ordering = ["-requested_at"]
+
+    def __str__(self):
+        return f"{self.parent.parent_name} → {self.student.student_name} ({self.get_status_display()})"
+
+class ExamResult(models.Model):
+    student = models.ForeignKey(StudentDetails, on_delete=models.CASCADE, related_name="exam_results")
+    exam_name = models.CharField(max_length=160)
+    marks_obtained = models.DecimalField(max_digits=7, decimal_places=2)
+    maximum_marks = models.DecimalField(max_digits=7, decimal_places=2)
+    passed = models.BooleanField(default=False)
+    recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="recorded_exam_results")
+    recorded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-recorded_at"]
+
+    def __str__(self):
+        return f"{self.student.student_name}: {self.exam_name}"
+
+class HomeworkStatus(models.Model):
+    student = models.ForeignKey(StudentDetails, on_delete=models.CASCADE, related_name="homework_statuses")
+    title = models.CharField(max_length=180)
+    is_done = models.BooleanField(default=False)
+    recorded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="recorded_homework_statuses")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-updated_at"]
+
+    def __str__(self):
+        return f"{self.title}: {self.student.student_name}"
+
+class StudyTime(models.Model):
+    student = models.OneToOneField(StudentDetails, on_delete=models.CASCADE, related_name="study_time")
+    seconds = models.PositiveBigIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def total_minutes(self):
+        return self.seconds // 60
 
 class Course(models.Model):
     title = models.CharField(max_length=180)

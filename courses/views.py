@@ -3,14 +3,15 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.models import User
-from django.db.models import Q
-from django.http import JsonResponse
+from django.db.models import F, Q
+from django.http import HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.defaultfilters import slugify
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import ListView, DetailView
-from .forms import ParentRegistrationForm, RoleAuthenticationForm, StudentRegistrationForm, TeacherRegistrationForm
-from .models import Course, Enrollment, Lesson, LessonProgress, ParentDetails, UserProfile
+from django.utils import timezone
+from .forms import ExamResultForm, HomeworkStatusForm, ParentRegistrationForm, RoleAuthenticationForm, StudentRegistrationForm, StudentSearchForm, TeacherRegistrationForm
+from .models import Course, Enrollment, Lesson, LessonProgress, ParentDetails, ParentWatchlist, StudyTime, StudentDetails, TeacherDetails, UserProfile
 
 
 class RoleLoginView(LoginView):
@@ -78,7 +79,8 @@ def dashboard(request):
         return render(request, "courses/dashboard.html", {"role": profile.role, "teacher_courses": courses})
     if profile.role == UserProfile.Role.PARENT:
         parent = ParentDetails.objects.filter(profile=profile).prefetch_related("children").first()
-        return render(request, "courses/dashboard.html", {"role": profile.role, "cards": [], "parent_details": parent})
+        watchlist = ParentWatchlist.objects.filter(parent=parent).select_related("student", "student__profile__user", "student__study_time").prefetch_related("student__exam_results", "student__homework_statuses") if parent else []
+        return render(request, "courses/dashboard.html", {"role": profile.role, "cards": [], "parent_details": parent, "watchlist": watchlist})
     enrollments = Enrollment.objects.filter(student=request.user).select_related("course", "course__instructor").prefetch_related("progress", "course__lessons")
     cards = []
     for enrollment in enrollments:
@@ -131,6 +133,8 @@ def signup(request):
     if request.method == "POST" and form and form.is_valid():
         user = form.save()
         login(request, user)
+        if role == UserProfile.Role.PARENT:
+            return redirect("parent-watchlist")
         return redirect("dashboard")
     return render(request, "registration/signup.html", {"form": form, "selected_role": role, "role_label": UserProfile.Role(role).label if role in forms_by_role else ""})
 
@@ -150,3 +154,102 @@ def username_suggestion(request):
         candidate = f"{base[:150 - len(suffix)]}{suffix}"
         serial += 1
     return JsonResponse({"username": candidate})
+
+
+def _has_role(request, role, verified_teacher=False):
+    profile = UserProfile.objects.filter(user=request.user).first()
+    if not profile or profile.role != role:
+        return False
+    if verified_teacher:
+        return TeacherDetails.objects.filter(profile=profile, is_verified=True).exists()
+    return True
+
+
+@login_required
+def parent_watchlist(request):
+    if not _has_role(request, UserProfile.Role.PARENT):
+        return HttpResponseForbidden("This page is for parent accounts.")
+    parent = get_object_or_404(ParentDetails, profile__user=request.user)
+    search_form = StudentSearchForm(request.GET or None)
+    results = StudentDetails.objects.none()
+    if search_form.is_valid():
+        query = search_form.cleaned_data["q"].strip()
+        if len(query) >= 3:
+            results = StudentDetails.objects.filter(
+                student_name__icontains=query,
+            ).filter(
+                Q(father_name__iexact=parent.parent_name) | Q(mother_name__iexact=parent.parent_name),
+            ).select_related("profile__user").order_by("student_name")[:15]
+    if request.method == "POST":
+        student = get_object_or_404(StudentDetails, pk=request.POST.get("student_id"))
+        request_obj, created = ParentWatchlist.objects.get_or_create(parent=parent, student=student)
+        if request_obj.status == ParentWatchlist.Status.REJECTED:
+            request_obj.status = ParentWatchlist.Status.PENDING
+            request_obj.reviewed_by = None
+            request_obj.reviewed_at = None
+            request_obj.save(update_fields=["status", "reviewed_by", "reviewed_at"])
+        messages.success(request, "Student added to your request list. A school administrator must approve access before records are shown.")
+        return redirect("dashboard")
+    return render(request, "courses/parent_watchlist.html", {"parent": parent, "search_form": search_form, "results": results, "requested_ids": set(parent.watchlist.values_list("student_id", flat=True))})
+
+
+@login_required
+def teacher_students(request):
+    if not _has_role(request, UserProfile.Role.TEACHER, verified_teacher=True):
+        return HttpResponseForbidden("Teacher student search is available after an administrator verifies your teacher account.")
+    teacher = get_object_or_404(TeacherDetails, profile__user=request.user, is_verified=True)
+    form = StudentSearchForm(request.GET or None)
+    students = StudentDetails.objects.none()
+    if form.is_valid():
+        query = form.cleaned_data["q"].strip()
+        if len(query) >= 3:
+            students = StudentDetails.objects.filter(student_name__icontains=query)
+            if not teacher.is_private_tutor and not request.user.is_staff:
+                students = students.filter(school_name__iexact=teacher.school_name)
+            students = students.select_related("profile__user").order_by("student_name")[:30]
+    return render(request, "courses/teacher_students.html", {"form": form, "students": students})
+
+
+@login_required
+def teacher_student_detail(request, student_id):
+    if not _has_role(request, UserProfile.Role.TEACHER, verified_teacher=True):
+        return HttpResponseForbidden("Teacher student records require a verified teacher account.")
+    teacher = get_object_or_404(TeacherDetails, profile__user=request.user, is_verified=True)
+    permitted_students = StudentDetails.objects.select_related("profile__user")
+    if not teacher.is_private_tutor and not request.user.is_staff:
+        permitted_students = permitted_students.filter(school_name__iexact=teacher.school_name)
+    student = get_object_or_404(permitted_students, pk=student_id)
+    exam_form = ExamResultForm(request.POST if request.method == "POST" and request.POST.get("record_type") == "exam" else None)
+    homework_form = HomeworkStatusForm(request.POST if request.method == "POST" and request.POST.get("record_type") == "homework" else None)
+    if request.method == "POST" and request.POST.get("record_type") == "exam" and exam_form.is_valid():
+        exam = exam_form.save(commit=False)
+        exam.student = student
+        exam.recorded_by = request.user
+        exam.save()
+        messages.success(request, "Exam result saved.")
+        return redirect("teacher-student-detail", student_id=student.id)
+    if request.method == "POST" and request.POST.get("record_type") == "homework" and homework_form.is_valid():
+        homework = homework_form.save(commit=False)
+        homework.student = student
+        homework.recorded_by = request.user
+        homework.save()
+        messages.success(request, "Homework status saved.")
+        return redirect("teacher-student-detail", student_id=student.id)
+    return render(request, "courses/teacher_student_detail.html", {"student": student, "exam_form": exam_form, "homework_form": homework_form})
+
+
+@login_required
+@require_POST
+def track_study_time(request):
+    if not _has_role(request, UserProfile.Role.STUDENT):
+        return JsonResponse({"error": "Student accounts only."}, status=403)
+    try:
+        seconds = int(request.POST.get("seconds", "0"))
+    except (TypeError, ValueError):
+        return JsonResponse({"error": "Invalid duration."}, status=400)
+    if seconds < 1 or seconds > 300:
+        return JsonResponse({"error": "Duration must be between 1 and 300 seconds."}, status=400)
+    student = get_object_or_404(StudentDetails, profile__user=request.user)
+    StudyTime.objects.get_or_create(student=student)
+    StudyTime.objects.filter(student=student).update(seconds=F("seconds") + seconds, updated_at=timezone.now())
+    return JsonResponse({"saved": seconds})

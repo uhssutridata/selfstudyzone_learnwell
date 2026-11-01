@@ -25,7 +25,7 @@
       <div class="role-art" aria-hidden="true">♡</div>
       <span class="eyebrow">SUPPORT THEIR JOURNEY</span>
       <h2>Parent</h2>
-      <p>Stay connected and follow a learner’s progress.</p>
+      <p>Request access to your children’s learning and follow their progress.</p>
       <a class="button role-button" href="?role=parent#signup-form">Register as a parent <span>→</span></a>
     </article>
   </div>
@@ -42,6 +42,7 @@
       {% endfor %}
       <button class="button button-wide">Create my account →</button>
     </form>
+    {% if selected_role == 'parent' %}<p class="role-hint">After creating your account, you’ll search for students and request access. The school must approve each request before performance details are shown.</p>{% endif %}
     <p class="auth-switch">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
   </div>
 </section>{% else %}<div class="signup-prompt" id="signup-form">Select one of the account types above to open its registration form.</div>{% endif %}
