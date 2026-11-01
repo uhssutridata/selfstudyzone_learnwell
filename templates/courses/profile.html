@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}My profile — Learnwell{% endblock %}
+{% block content %}
+<section class="dashboard-heading profile-heading">
+  <span class="eyebrow">YOUR ACCOUNT</span>
+  <h1>My <em>profile.</em></h1>
+  <p>Account details and information linked to your {{ profile.get_role_display|lower }} account.</p>
+</section>
+<section class="content-section profile-content">
+  <div class="profile-card">
+    <div class="profile-card-head"><span class="profile-avatar">{{ user.first_name|default:user.username|first|upper }}</span><div><span class="pill">{{ profile.get_role_display }}</span><h2>{% if profile.role == 'student' %}{{ details.student_name|default:user.username }}{% elif profile.role == 'teacher' %}{{ user.first_name|default:user.username }}{% elif profile.role == 'parent' %}{{ details.parent_name|default:user.username }}{% else %}{{ user.get_full_name|default:user.username }}{% endif %}</h2><p>@{{ user.username }}</p></div></div>
+    {% if profile.role == 'student' and details %}
+      <dl class="profile-fields"><div><dt>School</dt><dd>{{ details.school_name }}</dd></div><div><dt>Class</dt><dd>{{ details.class_name }}</dd></div><div><dt>Roll number</dt><dd>{{ details.roll_number }}</dd></div><div><dt>Father</dt><dd>{{ details.father_name }}</dd></div><div><dt>Mother</dt><dd>{{ details.mother_name }}</dd></div><div><dt>Block</dt><dd>{{ details.block }}</dd></div><div><dt>District</dt><dd>{{ details.district }}</dd></div><div><dt>State</dt><dd>{{ details.state }}</dd></div></dl>
+    {% elif profile.role == 'teacher' and details %}
+      <dl class="profile-fields"><div class="profile-field-wide"><dt>Subjects</dt><dd>{{ details.subject }}</dd></div><div><dt>Teaching type</dt><dd>{% if details.is_private_tutor %}Private tutor{% else %}School teacher{% endif %}</dd></div><div><dt>School</dt><dd>{{ details.school_name|default:'—' }}</dd></div><div class="profile-field-wide"><dt>School address</dt><dd>{{ details.school_address|default:'—' }}</dd></div><div><dt>Mobile</dt><dd>{{ details.mobile_number }}</dd></div><div><dt>Email</dt><dd>{{ details.email }}</dd></div><div><dt>Block</dt><dd>{{ details.block|default:'—' }}</dd></div><div><dt>District</dt><dd>{{ details.district|default:'—' }}</dd></div><div><dt>State</dt><dd>{{ details.state|default:'—' }}</dd></div></dl>
+      <div class="profile-status"><span class="eyebrow">ACCOUNT VERIFICATION</span><span class="pill {% if details.is_verified %}pill-approved{% else %}pill-pending{% endif %}">{% if details.is_verified %}Verified{% else %}Awaiting administrator verification{% endif %}</span></div>
+    {% elif profile.role == 'parent' and details %}
+      <dl class="profile-fields"><div class="profile-field-wide"><dt>Address</dt><dd>{{ details.address|linebreaksbr }}</dd></div><div><dt>Mobile</dt><dd>{{ details.mobile_number }}</dd></div><div><dt>Block</dt><dd>{{ details.block|default:'—' }}</dd></div><div><dt>District</dt><dd>{{ details.district|default:'—' }}</dd></div><div><dt>State</dt><dd>{{ details.state|default:'—' }}</dd></div></dl>
+      <div class="profile-watchlist"><div class="section-head"><h3>Student requests</h3><a class="text-link" href="{% url 'parent-watchlist' %}">Find a student →</a></div>{% for item in watchlist %}<div class="profile-request"><span>{{ item.student.student_name }} · Class {{ item.student.class_name }}</span><span class="pill {% if item.status == 'approved' %}pill-approved{% elif item.status == 'rejected' %}pill-rejected{% else %}pill-pending{% endif %}">{{ item.get_status_display }}</span></div>{% empty %}<p class="muted">No students on your watchlist yet.</p>{% endfor %}</div>
+    {% else %}<p class="muted">No role-specific profile details have been added yet.</p>{% endif %}
+  </div>
+</section>
+{% endblock %}

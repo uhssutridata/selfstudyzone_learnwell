@@ -89,6 +89,22 @@ def dashboard(request):
         cards.append({"enrollment": enrollment, "total": total, "done": done, "percent": round(done * 100 / total) if total else 0})
     return render(request, "courses/dashboard.html", {"role": profile.role, "cards": cards})
 
+
+@login_required
+def profile(request):
+    user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    details = None
+    watchlist = []
+    if user_profile.role == UserProfile.Role.STUDENT:
+        details = StudentDetails.objects.filter(profile=user_profile).first()
+    elif user_profile.role == UserProfile.Role.TEACHER:
+        details = TeacherDetails.objects.filter(profile=user_profile).first()
+    elif user_profile.role == UserProfile.Role.PARENT:
+        details = ParentDetails.objects.filter(profile=user_profile).first()
+        if details:
+            watchlist = ParentWatchlist.objects.filter(parent=details).select_related("student").order_by("-requested_at")
+    return render(request, "courses/profile.html", {"profile": user_profile, "details": details, "watchlist": watchlist})
+
 @login_required
 def enroll(request, slug):
     if request.method == "POST":
