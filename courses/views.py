@@ -131,9 +131,12 @@ def dashboard(request):
         enrollments = Enrollment.objects.none()
     cards = []
     for enrollment in enrollments:
-        total = enrollment.course.lessons.count()
-        done = enrollment.progress.count()
-        cards.append({"enrollment": enrollment, "total": total, "done": done, "percent": round(done * 100 / total) if total else 0})
+        course_lessons = list(enrollment.course.lessons.all())
+        completed_ids = {progress.lesson_id for progress in enrollment.progress.all()}
+        done = len(completed_ids)
+        lessons = [{"lesson": lesson, "completed": lesson.id in completed_ids} for lesson in course_lessons]
+        total = len(course_lessons)
+        cards.append({"enrollment": enrollment, "lessons": lessons, "total": total, "done": done, "percent": round(done * 100 / total) if total else 0})
     student_details = StudentDetails.objects.filter(profile=profile).first()
     subscription = Subscription.objects.get_or_create(student=student_details)[0] if student_details else None
     return render(request, "courses/dashboard.html", {"role": profile.role, "cards": cards, "subscription": subscription, "student_class_label": dict(Course.CLASS_LEVELS).get(class_key, "Unassigned")})
