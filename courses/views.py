@@ -122,7 +122,13 @@ def dashboard(request):
         watchlist = ParentWatchlist.objects.filter(parent=parent).select_related("student", "student__profile__user", "student__study_time").prefetch_related("student__exam_results", "student__homework_statuses") if parent else []
         return render(request, "courses/dashboard.html", {"role": profile.role, "cards": [], "parent_details": parent, "watchlist": watchlist})
     class_key = _student_class_key(request.user)
-    enrollments = Enrollment.objects.filter(student=request.user, course__class_name=class_key).select_related("course", "course__instructor").prefetch_related("progress", "course__lessons") if class_key else Enrollment.objects.none()
+    if class_key:
+        class_courses = Course.objects.filter(published=True, class_name=class_key)
+        for course in class_courses:
+            Enrollment.objects.get_or_create(student=request.user, course=course)
+        enrollments = Enrollment.objects.filter(student=request.user, course__published=True, course__class_name=class_key).select_related("course", "course__instructor").prefetch_related("progress", "course__lessons")
+    else:
+        enrollments = Enrollment.objects.none()
     cards = []
     for enrollment in enrollments:
         total = enrollment.course.lessons.count()
