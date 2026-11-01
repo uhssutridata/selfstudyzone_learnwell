@@ -1,1 +1,39 @@
-{% extends 'base.html' %}{% block title %}Log in — Learnwell{% endblock %}{% block content %}<section class="auth-wrap"><div class="auth-card"><span class="eyebrow">WELCOME BACK</span><h1>Pick up where<br><em>you left off.</em></h1><p class="auth-intro">Select the same account type you chose when you registered.</p><form method="post">{% csrf_token %}{{ form.non_field_errors }}<label for="id_role">{{ form.role.label }}</label>{{ form.role }}{{ form.role.errors }}<label for="id_username">Username</label>{{ form.username }}{{ form.username.errors }}<label for="id_password">Password</label>{{ form.password }}{{ form.password.errors }}{% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}<button class="button button-wide">Log in →</button></form><p class="auth-switch">New here? <a href="{% url 'signup' %}">Create an account</a></p></div></section>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Log in — Learnwell{% endblock %}
+{% block content %}
+<section class="signup-hero login-hero">
+  <span class="eyebrow">WELCOME BACK</span>
+  <h1>Choose your<br><em>learning space.</em></h1>
+  <p>Select the type of account you registered. We’ll take you to the matching login form.</p>
+  <div class="role-cards">
+    <article class="role-card role-student">
+      <div class="role-art" aria-hidden="true">✳</div><span class="eyebrow">YOUR LEARNING</span><h2>Student</h2>
+      <p>Continue your courses and pick up where you left off.</p>
+      <a class="button role-button" href="?role=student#login-form">Log in as a student <span>→</span></a>
+    </article>
+    <article class="role-card role-teacher">
+      <div class="role-art" aria-hidden="true">↗</div><span class="eyebrow">YOUR TEACHING</span><h2>Teacher</h2>
+      <p>Return to your teaching space and courses.</p>
+      <a class="button role-button" href="?role=teacher#login-form">Log in as a teacher <span>→</span></a>
+    </article>
+    <article class="role-card role-parent">
+      <div class="role-art" aria-hidden="true">♡</div><span class="eyebrow">YOUR FAMILY</span><h2>Parent</h2>
+      <p>Check in on your children’s learning journey.</p>
+      <a class="button role-button" href="?role=parent#login-form">Log in as a parent <span>→</span></a>
+    </article>
+  </div>
+</section>
+{% if selected_role %}<section class="auth-wrap signup-form-section" id="login-form">
+  <div class="auth-card">
+    <span class="eyebrow">{{ role_label|upper }} LOGIN</span>
+    <h2>Welcome back.</h2>
+    <form method="post">{% csrf_token %}{{ form.non_field_errors }}{{ form.role.as_hidden }}{{ form.role.errors }}
+      <label for="id_username">Username</label>{{ form.username }}{{ form.username.errors }}
+      <label for="id_password">Password</label>{{ form.password }}{{ form.password.errors }}
+      {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+      <button class="button button-wide">Log in as {{ role_label|lower }} →</button>
+    </form>
+    <p class="auth-switch">New here? <a href="{% url 'signup' %}">Create an account</a></p>
+  </div>
+</section>{% endif %}
+{% endblock %}

@@ -13,6 +13,21 @@ class RoleLoginView(LoginView):
     template_name = "registration/login.html"
     authentication_form = RoleAuthenticationForm
 
+    def get_initial(self):
+        initial = super().get_initial()
+        role = self.request.GET.get("role", "")
+        if role in UserProfile.Role.values:
+            initial["role"] = role
+        return initial
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        form = context.get("form")
+        role = (form.data.get("role") if form and form.is_bound else "") or self.request.GET.get("role", "")
+        context["selected_role"] = role if role in UserProfile.Role.values else ""
+        context["role_label"] = UserProfile.Role(context["selected_role"]).label if context["selected_role"] else ""
+        return context
+
 class CourseListView(ListView):
     model = Course
     template_name = "courses/course_list.html"
