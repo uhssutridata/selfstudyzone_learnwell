@@ -74,16 +74,16 @@
 @media(max-width:480px){.hero-math-animations{gap:2px}.math-hero-svg{flex-basis:110px;width:110px;height:54px}.tangent-hero-svg{flex-basis:145px;width:145px;height:60px}}
 .tangent-circle{fill:#f1f4eb;stroke:#91a781;stroke-width:1.7}
 .tangent-center{fill:#4f6e53}
-.tangent-rotor{transform-box:view-box;transform-origin:34px 35px;animation:tangent-rotation 8s linear infinite}
+.tangent-rotor{transform-box:view-box;transform-origin:34px 35px}
 .tangent-radius{stroke:#58764f;stroke-width:2;stroke-linecap:round}
 .tangent-line{stroke:#c08e65;stroke-width:2;stroke-linecap:round}
 .tangent-right-angle{fill:none;stroke:#526f52;stroke-width:1.7;stroke-linejoin:round}
-.tangent-point{fill:#d5a16f;stroke:#fff;stroke-width:1}
+.tangent-point{fill:#d5a16f;stroke:#fff;stroke-width:1;transform-box:fill-box;transform-origin:center;animation:tangent-highlight 2s ease-in-out infinite}
 .tangent-label{fill:#52634b;font:italic 11px Georgia,serif}
 .tangent-formula{fill:#45624b;font:italic 16px Georgia,serif}
 .tangent-degrees{fill:#8e6e50;font:600 13px 'DM Sans',Arial,sans-serif}
-@keyframes tangent-rotation{to{transform:rotate(360deg)}}
-@media(prefers-reduced-motion:reduce){.tangent-rotor{animation:none!important}}
+@keyframes tangent-highlight{0%,100%{opacity:.65;transform:scale(.85)}50%{opacity:1;transform:scale(1.3)}}
+@media(prefers-reduced-motion:reduce){.tangent-point{animation:none!important}}
 @media(prefers-reduced-motion:reduce){.math-orbiting-points,.math-orbit-ring,.math-symbol{animation:none!important}}
 .home-science-doodles{display:flex;align-items:center;gap:13px;flex:0 0 auto;color:#718866}
 .home-science-doodles svg{display:block;width:108px;height:82px;overflow:visible}
