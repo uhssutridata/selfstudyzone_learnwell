@@ -3,8 +3,21 @@ import re
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
+from django.forms.widgets import CheckboxSelectMultiple
 
 from .models import ParentChild, ParentDetails, StudentDetails, TeacherDetails, UserProfile
+
+TEACHING_SUBJECTS = [
+    ("mathematics", "Mathematics"),
+    ("science", "Science"),
+    ("english", "English"),
+    ("social_studies", "Social Studies"),
+    ("hindi", "Hindi"),
+    ("computer_science", "Computer Science"),
+    ("art_design", "Art and Design"),
+    ("business_economics", "Business and Economics"),
+    ("other", "Other"),
+]
 
 
 class RegistrationForm(UserCreationForm):
@@ -53,7 +66,13 @@ class TeacherRegistrationForm(RegistrationForm):
     block = forms.CharField(max_length=120, required=False, label="Block (optional)")
     district = forms.CharField(max_length=120, required=False, label="District (optional)")
     state = forms.CharField(max_length=120, required=False, label="State (optional)")
-    subject = forms.CharField(max_length=160, label="Subject(s) you teach")
+    subjects = forms.MultipleChoiceField(
+        choices=TEACHING_SUBJECTS,
+        widget=CheckboxSelectMultiple,
+        label="Select the subjects you teach",
+        error_messages={"required": "Select at least one subject."},
+    )
+    other_subject = forms.CharField(max_length=160, required=False, label="Other subject (if applicable)")
     is_private_tutor = forms.BooleanField(required=False, label="I am a private tutor")
     school_name = forms.CharField(max_length=200, required=False, label="School name where you teach")
     school_address = forms.CharField(widget=forms.Textarea(attrs={"rows": 3}), required=False, label="School address")
@@ -61,7 +80,13 @@ class TeacherRegistrationForm(RegistrationForm):
     email = forms.EmailField(label="Email address")
 
     class Meta(RegistrationForm.Meta):
-        fields = ("full_name", "username", "subject", "is_private_tutor", "school_name", "school_address", "mobile_number", "email", "block", "district", "state")
+        fields = ("full_name", "username", "subjects", "other_subject", "is_private_tutor", "school_name", "school_address", "mobile_number", "email", "block", "district", "state")
+
+    def clean(self):
+        cleaned = super().clean()
+        if "other" in cleaned.get("subjects", []) and not cleaned.get("other_subject", "").strip():
+            self.add_error("other_subject", "Enter the subject you selected as Other.")
+        return cleaned
 
     def clean_mobile_number(self):
         value = self.cleaned_data["mobile_number"].strip()
@@ -85,9 +110,17 @@ class TeacherRegistrationForm(RegistrationForm):
             user.email = self.cleaned_data["email"]
             user.first_name = self.cleaned_data["full_name"]
             user.save(update_fields=["email", "first_name"])
-            TeacherDetails.objects.create(profile=profile, **{key: self.cleaned_data[key] for key in (
-                "subject", "school_name", "school_address", "is_private_tutor", "mobile_number", "email", "block", "district", "state"
-            )})
+            labels = dict(TEACHING_SUBJECTS)
+            subjects = [labels[value] for value in self.cleaned_data["subjects"] if value != "other"]
+            if "other" in self.cleaned_data["subjects"]:
+                subjects.append(self.cleaned_data["other_subject"].strip())
+            TeacherDetails.objects.create(
+                profile=profile,
+                subject=", ".join(subjects),
+                **{key: self.cleaned_data[key] for key in (
+                    "school_name", "school_address", "is_private_tutor", "mobile_number", "email", "block", "district", "state"
+                )},
+            )
         return user
 
 
