@@ -8,11 +8,5 @@
       <button class="button">{{ home_settings.search_button }} <span>→</span></button>
     </form>
   </div>
-  {% if home_settings.layout != 'text_only' %}
-  <div class="hero-art">
-    <div class="sun"></div><div class="art-card card-back"></div>
-    <div class="art-card card-front"><span class="art-spark">✳</span><span>{{ home_settings.illustration_text|linebreaksbr }}</span></div>
-    <div class="art-caption">{{ home_settings.illustration_caption }}</div>
-  </div>
-  {% endif %}
+  {% include 'courses/home_content_cards.html' %}
 </section>
