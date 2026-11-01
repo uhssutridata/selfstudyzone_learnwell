@@ -6,3 +6,5 @@
 .topbar{position:sticky;top:0;z-index:100;width:100%}.topbar nav{flex:1;justify-content:flex-end}@media(max-width:760px){.topbar{position:sticky;top:0;z-index:100}.mobile-menu{margin-left:auto}}
 /* Keep the header fixed while the page content scrolls. */
 body{padding-top:78px}.topbar{position:fixed;top:0;left:0;right:0;width:100%}@media(max-width:760px){body{padding-top:65px}.topbar{position:fixed;top:0;left:0;right:0;width:100%}}
+/* Restore the original desktop header flow and menu alignment. */
+@media(min-width:761px){body{padding-top:0}.topbar{position:static;top:auto;left:auto;right:auto}.topbar nav{flex:initial;justify-content:initial}}
