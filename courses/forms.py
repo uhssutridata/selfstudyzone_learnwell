@@ -154,11 +154,12 @@ class StudentProfileForm(ProfileAvatarMixin, forms.ModelForm):
     class Meta:
         model = StudentDetails
         fields = ("student_name", "father_name", "mother_name", "school_name", "class_name", "roll_number", "block", "district", "state")
+        labels = {"student_name": "Full name"}
 
 
 class TeacherProfileForm(ProfileAvatarMixin, forms.ModelForm):
     avatar = forms.ImageField(required=False, label="Profile photo")
-    full_name = forms.CharField(max_length=160, required=False, label="Your name")
+    full_name = forms.CharField(max_length=160, required=False, label="Full name")
     subjects = forms.MultipleChoiceField(choices=TEACHING_SUBJECTS, widget=CheckboxSelectMultiple, required=False, label="Subjects you teach")
     other_subject = forms.CharField(max_length=160, required=False, label="Other subject")
 
@@ -172,7 +173,7 @@ class TeacherProfileForm(ProfileAvatarMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.profile_id:
-            self.fields["full_name"].initial = self.instance.profile.user.first_name
+            self.fields["full_name"].initial = self.instance.profile.user.get_full_name()
         if self.instance and self.instance.subject:
             current = {label: key for key, label in TEACHING_SUBJECTS}
             self.fields["subjects"].initial = [current[s.strip()] for s in self.instance.subject.split(",") if s.strip() in current]
@@ -197,6 +198,7 @@ class ParentProfileForm(ProfileAvatarMixin, forms.ModelForm):
     class Meta:
         model = ParentDetails
         fields = ("parent_name", "address", "mobile_number", "block", "district", "state")
+        labels = {"parent_name": "Full name"}
 
 
 class StudentSearchForm(forms.Form):

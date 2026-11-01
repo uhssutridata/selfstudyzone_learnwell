@@ -154,7 +154,8 @@ def profile_edit(request):
         form.save_avatar(user_profile)
         if user_profile.role == UserProfile.Role.TEACHER:
             request.user.first_name = form.cleaned_data.get("full_name", "").strip()
-            request.user.save(update_fields=["first_name"])
+            request.user.last_name = ""
+            request.user.save(update_fields=["first_name", "last_name"])
             if form.verification_details_changed():
                 updated.is_verified = False
                 updated.save(update_fields=["is_verified"])
