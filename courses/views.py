@@ -100,7 +100,7 @@ def complete_lesson(request, slug, lesson_id):
 def signup(request):
     if request.user.is_authenticated:
         return redirect("dashboard")
-    form = SignUpForm(request.POST or None)
+    form = SignUpForm(request.POST or None, initial={"role": request.GET.get("role", "")})
     if request.method == "POST" and form.is_valid():
         user = form.save()
         login(request, user)

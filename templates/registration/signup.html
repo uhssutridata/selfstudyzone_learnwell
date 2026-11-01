@@ -1,1 +1,47 @@
-{% extends 'base.html' %}{% block title %}Create an account — Learnwell{% endblock %}{% block content %}<section class="auth-wrap"><div class="auth-card"><span class="eyebrow">A GOOD PLACE TO BEGIN</span><h1>Make space<br><em>to grow.</em></h1><p class="auth-intro">Choose the account type that fits you. It personalizes your sign-in and learning space.</p><form method="post">{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}<label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% if field.name == 'role' %}<div class="role-hint">Students learn and track courses. Teachers create and lead courses. Parents follow a learner’s progress.</div>{% endif %}{% if field.help_text %}<div class="help-text">{{ field.help_text|safe }}</div>{% endif %}{{ field.errors }}{% endfor %}<button class="button button-wide">Create my account →</button></form><p class="auth-switch">Already have an account? <a href="{% url 'login' %}">Log in</a></p></div></section>{% endblock %}
+{% extends 'base.html' %}
+{% block title %}Create an account — Learnwell{% endblock %}
+{% block content %}
+<section class="signup-hero">
+  <span class="eyebrow">A GOOD PLACE TO BEGIN</span>
+  <h1>Choose how you’ll<br><em>learn together.</em></h1>
+  <p>Pick the space that fits you. Each account gets a learning experience designed for its role.</p>
+  <div class="role-cards">
+    <article class="role-card role-student">
+      <div class="role-art" aria-hidden="true">✳</div>
+      <span class="eyebrow">LEARN AT YOUR PACE</span>
+      <h2>Student</h2>
+      <p>Explore courses, learn new skills, and keep track of your progress.</p>
+      <a class="button role-button" href="?role=student#signup-form">Register as a student <span>→</span></a>
+    </article>
+    <article class="role-card role-teacher">
+      <div class="role-art" aria-hidden="true">↗</div>
+      <span class="eyebrow">SHARE WHAT YOU KNOW</span>
+      <h2>Teacher</h2>
+      <p>Bring your expertise to learners and manage your courses.</p>
+      <a class="button role-button" href="?role=teacher#signup-form">Register as a teacher <span>→</span></a>
+    </article>
+    <article class="role-card role-parent">
+      <div class="role-art" aria-hidden="true">♡</div>
+      <span class="eyebrow">SUPPORT THEIR JOURNEY</span>
+      <h2>Parent</h2>
+      <p>Stay connected and follow a learner’s progress.</p>
+      <a class="button role-button" href="?role=parent#signup-form">Register as a parent <span>→</span></a>
+    </article>
+  </div>
+</section>
+<section class="auth-wrap signup-form-section" id="signup-form">
+  <div class="auth-card">
+    <span class="eyebrow">CREATE YOUR ACCOUNT</span>
+    <h2>Start your next chapter.</h2>
+    <form method="post">{% csrf_token %}{{ form.non_field_errors }}
+      {% for field in form %}
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}
+        {% if field.name == 'role' %}<div class="role-hint">Choose the same role you’ll use when logging in.</div>{% endif %}
+        {% if field.help_text %}<div class="help-text">{{ field.help_text|safe }}</div>{% endif %}{{ field.errors }}
+      {% endfor %}
+      <button class="button button-wide">Create my account →</button>
+    </form>
+    <p class="auth-switch">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
+  </div>
+</section>
+{% endblock %}
