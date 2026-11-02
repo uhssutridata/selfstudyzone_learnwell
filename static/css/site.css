@@ -40,6 +40,14 @@
 .home-page .hero .search .button{font-size:14px}
 .home-page .hero-content-cards .home-card-heading h2{font-size:17px}
 .home-page .hero-content-cards .home-card-heading .eyebrow{font-size:8px}
+.hero-animation-gallery{width:100%;min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;align-self:center}
+.hero-animation-tile{min-height:165px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:12px;background:linear-gradient(145deg,#fff 0%,#f0f2e9 100%);border:1px solid #e3e7dc;border-radius:14px;box-shadow:0 12px 26px #2632260c;color:#718866}
+.hero-animation-tile>span{align-self:flex-start;color:#71816c;font-size:9px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase}
+.hero-animation-tile svg{display:block;width:min(100%,210px);height:112px;overflow:visible}
+.hero-animation-tile .math-hero-svg{flex:auto;width:min(100%,210px);height:112px}
+.hero-animation-tile .tangent-hero-svg{flex:auto;width:min(100%,230px);height:112px}
+@media(max-width:760px){.hero-animation-gallery{max-width:560px;margin:0 auto;gap:12px}.hero-animation-tile{min-height:145px}.hero-animation-tile svg{height:100px}}
+@media(max-width:480px){.hero-animation-gallery{gap:9px}.hero-animation-tile{min-height:125px;padding:9px;border-radius:10px}.hero-animation-tile>span{font-size:8px}.hero-animation-tile svg{height:82px}}
 .home-page .hero-content-cards .home-card-empty strong{font-size:15px}
 .home-page .hero-content-cards .home-card-empty p,.home-page .hero-content-cards .featured-notice p,.home-page .hero-content-cards .featured-performance>p{font-size:12px}
 .home-page .hero-content-cards .featured-notice h3,.home-page .hero-content-cards .featured-performance h3{font-size:18px}
