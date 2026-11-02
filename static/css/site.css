@@ -58,7 +58,7 @@
 .fresh-math-svg .symbol-pi{transform-origin:426px 84px;animation:fresh-math-float 4.8s ease-in-out infinite}
 .fresh-math-svg .symbol-sigma{transform-origin:80px 80px;animation:fresh-math-float 4s ease-in-out -1.5s infinite}
 .fresh-math-svg .symbol-root{transform-origin:431px 305px;animation:fresh-math-float 4.4s ease-in-out -2.1s infinite}
-.fresh-math-svg .math-sine-curve{stroke-dasharray:500;stroke-dashoffset:500;animation:fresh-math-draw 2.4s cubic-bezier(.4,0,.2,1) forwards}
+.fresh-math-svg .math-exponential-curve{stroke-dasharray:500;stroke-dashoffset:500;animation:fresh-math-draw 2.4s cubic-bezier(.4,0,.2,1) forwards}
 .fresh-math-svg .math-axis-label{fill:#637c5c;font:italic 16px Georgia,serif}
 .fresh-math-svg .math-vertex-label{fill:#71816c;font:italic 12px Georgia,serif}
 .fresh-math-svg .math-formula{fill:#46634a;font:italic 19px Georgia,serif}
@@ -69,7 +69,7 @@
 @keyframes fresh-math-halo-pulse{0%,100%{opacity:.18;scale:.85}50%{opacity:.4;scale:1.2}}
 @media(max-width:760px){.hero-math-visual{height:300px}.fresh-math-svg{max-width:480px}}
 @media(max-width:480px){.hero-math-visual{height:auto;min-height:250px}.fresh-math-svg{width:110%;max-width:none;margin-left:-5%}.fresh-math-svg .math-small-note{font-size:15px}}
-@media(prefers-reduced-motion:reduce){.fresh-math-svg .math-floating-symbol,.fresh-math-svg .math-moving-point-halo{animation:none!important}.fresh-math-svg .math-sine-curve{animation:none!important;stroke-dashoffset:0}}
+@media(prefers-reduced-motion:reduce){.fresh-math-svg .math-floating-symbol,.fresh-math-svg .math-moving-point-halo{animation:none!important}.fresh-math-svg .math-exponential-curve{animation:none!important;stroke-dashoffset:0}}
 .hero-content-cards .home-card-heading{position:relative}
 .home-card-illustration{flex:0 0 62px;width:62px;height:44px;margin-left:auto;overflow:visible}
 .notice-illustration{color:#68815c}
