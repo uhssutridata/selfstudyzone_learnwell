@@ -10,8 +10,8 @@
   </div>
   <div class="hero-math-visual">
     <svg class="fresh-math-svg" viewBox="0 0 520 390" role="img" aria-labelledby="fresh-math-title fresh-math-description">
-      <title id="fresh-math-title">An animated quadratic graph</title>
-      <desc id="fresh-math-description">A parabola draws across coordinate axes as a point moves along its curve, surrounded by mathematical symbols.</desc>
+      <title id="fresh-math-title">An animated sine graph</title>
+      <desc id="fresh-math-description">A sine curve draws across coordinate axes while a highlighted point moves along one full cycle.</desc>
       <defs>
         <linearGradient id="math-panel-gradient" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eef2e7"/><stop offset="1" stop-color="#dce7d3"/></linearGradient>
         <linearGradient id="math-curve-gradient" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#91a982"/><stop offset=".5" stop-color="#496d50"/><stop offset="1" stop-color="#c0956e"/></linearGradient>
@@ -26,18 +26,18 @@
       <g class="math-grid-lines" stroke="#dfe6d9" stroke-width="1">
         <path d="M112 94v206M162 94v206M212 94v206M262 94v206M312 94v206M362 94v206M412 94v206M88 118h344M88 158h344M88 198h344M88 238h344M88 278h344"/>
       </g>
-      <path d="M88 278H432M112 300V96" fill="none" stroke="#637c5c" stroke-width="2.5" stroke-linecap="round"/>
-      <path class="math-axis-arrow" d="m432 278-8-5v10zM112 96l-5 8h10z" fill="#637c5c"/>
-      <text class="math-axis-label" x="421" y="300">x</text><text class="math-axis-label" x="94" y="107">y</text>
-      <path class="math-parabola" d="M132 256Q260 65 388 256" fill="none" stroke="url(#math-curve-gradient)" stroke-width="6" stroke-linecap="round"/>
-      <path d="M260 131V278" stroke="#c5966d" stroke-width="1.5" stroke-dasharray="4 6" opacity=".65"/>
-      <circle cx="260" cy="131" r="7" fill="#fff" stroke="#52734f" stroke-width="3"/>
-      <text class="math-vertex-label" x="274" y="126">vertex</text>
-      <circle class="math-moving-point-halo" cx="132" cy="256" r="12" fill="#d3a16f" opacity=".22"><animateMotion dur="5s" repeatCount="indefinite" path="M0 0 Q128 -191 256 0"/></circle>
-      <circle class="math-moving-point" cx="132" cy="256" r="7" fill="#cb9569" stroke="#fff" stroke-width="3" filter="url(#math-point-glow)"><animateMotion dur="5s" repeatCount="indefinite" path="M0 0 Q128 -191 256 0"/></circle>
+      <path d="M88 198H432M112 300V96" fill="none" stroke="#637c5c" stroke-width="2.5" stroke-linecap="round"/>
+      <path class="math-axis-arrow" d="m432 198-8-5v10zM112 96l-5 8h10z" fill="#637c5c"/>
+      <text class="math-axis-label" x="421" y="220">x</text><text class="math-axis-label" x="94" y="107">y</text>
+      <path class="math-sine-curve" d="M132 198 C156 198 174 130 196 130 C218 130 236 198 260 198 C284 198 302 266 324 266 C346 266 364 198 388 198" fill="none" stroke="url(#math-curve-gradient)" stroke-width="6" stroke-linecap="round"/>
+      <path d="M196 130V198" stroke="#c5966d" stroke-width="1.5" stroke-dasharray="4 6" opacity=".65"/>
+      <circle cx="196" cy="130" r="7" fill="#fff" stroke="#52734f" stroke-width="3"/>
+      <text class="math-vertex-label" x="207" y="125">maximum</text>
+      <circle class="math-moving-point-halo" cx="132" cy="198" r="12" fill="#d3a16f" opacity=".22"><animateMotion dur="5s" repeatCount="indefinite" path="M0 0 C24 0 42 -68 64 -68 C86 -68 104 0 128 0 C152 0 170 68 192 68 C214 68 232 0 256 0"/></circle>
+      <circle class="math-moving-point" cx="132" cy="198" r="7" fill="#cb9569" stroke="#fff" stroke-width="3" filter="url(#math-point-glow)"><animateMotion dur="5s" repeatCount="indefinite" path="M0 0 C24 0 42 -68 64 -68 C86 -68 104 0 128 0 C152 0 170 68 192 68 C214 68 232 0 256 0"/></circle>
       <rect class="math-formula-card" x="300" y="31" width="105" height="42" rx="12" fill="#fff"/>
-      <text class="math-formula" x="352" y="58" text-anchor="middle">y = ax²</text>
-      <text class="math-small-note" x="260" y="355" text-anchor="middle">A curve comes alive, one point at a time.</text>
+      <text class="math-formula" x="352" y="58" text-anchor="middle">y = sin x</text>
+      <text class="math-small-note" x="260" y="355" text-anchor="middle">One full sine cycle, traced point by point.</text>
     </svg>
   </div>
 </section>
