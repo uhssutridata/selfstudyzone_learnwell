@@ -40,14 +40,6 @@
 .home-page .hero .search .button{font-size:14px}
 .home-page .hero-content-cards .home-card-heading h2{font-size:17px}
 .home-page .hero-content-cards .home-card-heading .eyebrow{font-size:8px}
-.hero-animation-gallery{width:100%;min-width:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;align-self:center}
-.hero-animation-tile{min-height:165px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:12px;background:linear-gradient(145deg,#fff 0%,#f0f2e9 100%);border:1px solid #e3e7dc;border-radius:14px;box-shadow:0 12px 26px #2632260c;color:#718866}
-.hero-animation-tile>span{align-self:flex-start;color:#71816c;font-size:9px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase}
-.hero-animation-tile svg{display:block;width:min(100%,210px);height:112px;overflow:visible}
-.hero-animation-tile .math-hero-svg{flex:auto;width:min(100%,210px);height:112px}
-.hero-animation-tile .tangent-hero-svg{flex:auto;width:min(100%,230px);height:112px}
-@media(max-width:760px){.hero-animation-gallery{max-width:560px;margin:0 auto;gap:12px}.hero-animation-tile{min-height:145px}.hero-animation-tile svg{height:100px}}
-@media(max-width:480px){.hero-animation-gallery{gap:9px}.hero-animation-tile{min-height:125px;padding:9px;border-radius:10px}.hero-animation-tile>span{font-size:8px}.hero-animation-tile svg{height:82px}}
 .home-page .hero-content-cards .home-card-empty strong{font-size:15px}
 .home-page .hero-content-cards .home-card-empty p,.home-page .hero-content-cards .featured-notice p,.home-page .hero-content-cards .featured-performance>p{font-size:12px}
 .home-page .hero-content-cards .featured-notice h3,.home-page .hero-content-cards .featured-performance h3{font-size:18px}
@@ -58,6 +50,24 @@
 .home-page .course-info .meta,.home-page .course-info .teacher{font-size:12px}
 @media(max-width:760px){.home-page .hero h1{font-size:52px}.home-page .hero-copy>p{font-size:16px}.home-page .section-head h2{font-size:28px}}
 @media(max-width:480px){.home-page .hero h1{font-size:46px}.home-page .hero-copy>p{font-size:15px}.home-page .course-info h3{font-size:19px}}
+.hero-math-visual{width:100%;min-width:0;height:340px;display:grid;place-items:center}
+.fresh-math-svg{display:block;width:100%;max-width:500px;height:auto;overflow:visible}
+.fresh-math-svg .math-floating-symbol text{fill:#71906a;font:italic 34px Georgia,serif}
+.fresh-math-svg .symbol-pi{transform-origin:426px 84px;animation:fresh-math-float 4.8s ease-in-out infinite}
+.fresh-math-svg .symbol-sigma{transform-origin:80px 80px;animation:fresh-math-float 4s ease-in-out -1.5s infinite}
+.fresh-math-svg .symbol-root{transform-origin:431px 305px;animation:fresh-math-float 4.4s ease-in-out -2.1s infinite}
+.fresh-math-svg .math-parabola{stroke-dasharray:500;stroke-dashoffset:500;animation:fresh-math-draw 2.4s cubic-bezier(.4,0,.2,1) forwards}
+.fresh-math-svg .math-axis-label{fill:#637c5c;font:italic 16px Georgia,serif}
+.fresh-math-svg .math-vertex-label{fill:#71816c;font:italic 12px Georgia,serif}
+.fresh-math-svg .math-formula{fill:#46634a;font:italic 19px Georgia,serif}
+.fresh-math-svg .math-small-note{fill:#71816c;font:12px 'DM Sans',Arial,sans-serif}
+.fresh-math-svg .math-moving-point-halo{animation:fresh-math-halo-pulse 1.8s ease-in-out infinite}
+@keyframes fresh-math-draw{to{stroke-dashoffset:0}}
+@keyframes fresh-math-float{0%,100%{translate:0 0;opacity:.68}50%{translate:0 -9px;opacity:1}}
+@keyframes fresh-math-halo-pulse{0%,100%{opacity:.18;scale:.85}50%{opacity:.4;scale:1.2}}
+@media(max-width:760px){.hero-math-visual{height:300px}.fresh-math-svg{max-width:480px}}
+@media(max-width:480px){.hero-math-visual{height:auto;min-height:250px}.fresh-math-svg{width:110%;max-width:none;margin-left:-5%}.fresh-math-svg .math-small-note{font-size:15px}}
+@media(prefers-reduced-motion:reduce){.fresh-math-svg .math-floating-symbol,.fresh-math-svg .math-parabola,.fresh-math-svg .math-moving-point-halo{animation:none!important}}
 .hero-content-cards .home-card-heading{position:relative}
 .home-card-illustration{flex:0 0 62px;width:62px;height:44px;margin-left:auto;overflow:visible}
 .notice-illustration{color:#68815c}
@@ -65,34 +75,6 @@
 .feedback-illustration{color:#9b8194}
 @media(max-width:480px){.home-card-illustration{flex-basis:50px;width:50px;height:38px}}
 .feedback-avatar-image{display:block;flex:0 0 32px;width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid #e9eee1}
-.hero-eyebrow-row{display:flex;flex-direction:column;align-items:flex-start;gap:2px;max-width:510px}
-.hero-eyebrow-row>.eyebrow{flex:1}
-.hero-math-animations{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;max-width:410px}
-.math-hero-svg{flex:0 0 140px;width:140px;height:68px;overflow:visible;color:#64815a}
-.tangent-hero-svg{flex:0 0 190px;width:190px;height:78px;overflow:visible;color:#64815a}
-.math-orbit-ring{fill:none;stroke:#9caf8b;stroke-width:1.3;stroke-dasharray:3 4;transform-origin:70px 34px;animation:math-ring-pulse 3.8s ease-in-out infinite}
-.math-center{fill:#e8eedf;stroke:#8da47c;stroke-width:1.5}
-.math-center-symbol{fill:#45654c;font:italic 17px Georgia,serif}
-.math-orbiting-points{fill:#c3966e;transform-origin:70px 34px;animation:math-orbit 7s linear infinite}
-.math-symbol{fill:#58734f;font:italic 13px Georgia,serif;animation:math-float 2.8s ease-in-out infinite}
-.math-root{animation-delay:-1.1s}.math-square{animation-delay:-1.8s}
-@keyframes math-orbit{to{transform:rotate(360deg)}}
-@keyframes math-ring-pulse{0%,100%{opacity:.45}50%{opacity:1}}
-@keyframes math-float{0%,100%{transform:translateY(0);opacity:.7}50%{transform:translateY(-4px);opacity:1}}
-@media(max-width:480px){.hero-math-animations{gap:2px}.math-hero-svg{flex-basis:110px;width:110px;height:54px}.tangent-hero-svg{flex-basis:145px;width:145px;height:60px}}
-.tangent-circle{fill:#f1f4eb;stroke:#91a781;stroke-width:1.7}
-.tangent-center{fill:#4f6e53}
-.tangent-rotor{transform-box:view-box;transform-origin:34px 35px}
-.tangent-radius{stroke:#58764f;stroke-width:2;stroke-linecap:round}
-.tangent-line{stroke:#c08e65;stroke-width:2;stroke-linecap:round}
-.tangent-right-angle{fill:none;stroke:#526f52;stroke-width:1.7;stroke-linejoin:round}
-.tangent-point{fill:#d5a16f;stroke:#fff;stroke-width:1;transform-box:fill-box;transform-origin:center;animation:tangent-highlight 2s ease-in-out infinite}
-.tangent-label{fill:#52634b;font:italic 11px Georgia,serif}
-.tangent-formula{fill:#45624b;font:italic 16px Georgia,serif}
-.tangent-degrees{fill:#8e6e50;font:600 13px 'DM Sans',Arial,sans-serif}
-@keyframes tangent-highlight{0%,100%{opacity:.65;transform:scale(.85)}50%{opacity:1;transform:scale(1.3)}}
-@media(prefers-reduced-motion:reduce){.tangent-point{animation:none!important}}
-@media(prefers-reduced-motion:reduce){.math-orbiting-points,.math-orbit-ring,.math-symbol{animation:none!important}}
 .home-science-doodles{display:flex;align-items:center;gap:13px;flex:0 0 auto;color:#718866}
 .home-science-doodles svg{display:block;width:108px;height:82px;overflow:visible}
 .physics-electron{transform-origin:50px 35px;animation:physics-orbit 5s linear infinite}
