@@ -1,0 +1,78 @@
+name: Deploy LMS to VPS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lms-vps-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Configure SSH
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_APP_PATH: ${{ secrets.VPS_APP_PATH }}
+          VPS_SSH_PORT: ${{ secrets.VPS_SSH_PORT || '22' }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          : "${VPS_HOST:?Add VPS_HOST to the repository Actions secrets}"
+          : "${VPS_USER:?Add VPS_USER to the repository Actions secrets}"
+          : "${VPS_APP_PATH:?Add VPS_APP_PATH to the repository Actions secrets}"
+          : "${VPS_SSH_KEY:?Add VPS_SSH_KEY to the repository Actions secrets}"
+          : "${VPS_KNOWN_HOSTS:?Add VPS_KNOWN_HOSTS to the repository Actions secrets}"
+          [[ "$VPS_HOST" =~ ^[A-Za-z0-9.-]+$ ]]
+          [[ "$VPS_USER" =~ ^[A-Za-z0-9._-]+$ ]]
+          [[ "$VPS_SSH_PORT" =~ ^[0-9]+$ ]]
+          [[ "$VPS_APP_PATH" =~ ^/[A-Za-z0-9_./-]+$ && "$VPS_APP_PATH" != "/" ]] || { echo "VPS_APP_PATH must be a non-root absolute path without spaces" >&2; exit 1; }
+
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$VPS_SSH_KEY" > "$HOME/.ssh/lms_deploy_key"
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/lms_deploy_key" "$HOME/.ssh/known_hosts"
+
+          cat >> "$HOME/.ssh/config" <<EOF
+          Host lms-vps
+            HostName $VPS_HOST
+            User $VPS_USER
+            Port $VPS_SSH_PORT
+            IdentityFile $HOME/.ssh/lms_deploy_key
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+          EOF
+          chmod 600 "$HOME/.ssh/config"
+          ssh lms-vps "mkdir -p -- '$VPS_APP_PATH'"
+
+      - name: Sync application files
+        env:
+          VPS_APP_PATH: ${{ secrets.VPS_APP_PATH }}
+        run: |
+          set -euo pipefail
+          rsync -az --delete \
+            --exclude='/.git/' \
+            --exclude='/.env' \
+            --exclude='/media/' \
+            --exclude='/staticfiles/' \
+            -e "ssh -F $HOME/.ssh/config" \
+            ./ "lms-vps:${VPS_APP_PATH%/}/"
+
+      - name: Build and restart Compose services
+        env:
+          VPS_APP_PATH: ${{ secrets.VPS_APP_PATH }}
+        run: |
+          set -euo pipefail
+          ssh lms-vps "cd '$VPS_APP_PATH' && docker compose -p learnwell up -d --build --remove-orphans"
